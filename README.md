@@ -39,3 +39,14 @@ Note: Essentials remain a provisional starter list until the curated CoFID value
 - Custom foods remain manual and can be saved as favourites.
 
 Reference values are intended for generic foods; use packaging for branded/prepared foods when available.
+
+## V4.3 badge interaction fix
+- Badge taps now use document-level event delegation, which is more reliable on iOS/PWA.
+- Badge child elements no longer intercept taps.
+- Badge detail modal z-index increased to ensure it appears above navigation/sheets.
+
+## V4.4 chart polish
+- Increased the gap between the bottom of every chart bar and its date label.
+- Added a subtle chart baseline so labels sit visually below the plotting area.
+- Applied the same spacing treatment across calorie, protein, weight and waist charts.
+- Keeps the V4.3 badge tap fix.

@@ -216,3 +216,46 @@ nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.95);back
 .food-total-preview{background:#fff5c9;padding:12px;border-radius:13px;text-align:center;font-weight:900;margin:10px 0}
 .check-save{display:flex!important;align-items:center;gap:8px}.check-save input{width:auto!important}
 .edit-amount-field{display:flex;align-items:center;gap:9px}.edit-amount-field input{flex:1}.edit-amount-field span{min-width:42px;color:var(--muted);font-weight:800}
+
+/* V4.3 badge modal/tap hardening */
+#badgeModal{z-index:9999}
+.badge{pointer-events:auto!important}
+.badge *{pointer-events:none}
+
+/* V4.4 chart spacing polish */
+.bar-chart{
+  position:relative;
+  padding-bottom:8px;
+}
+.bar-chart:after{
+  content:"";
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:48px;
+  height:1px;
+  background:#dfe8f3;
+}
+.bar-item{
+  grid-template-rows:18px 18px 154px 52px;
+  height:252px;
+}
+.bar-rail{
+  position:relative;
+  z-index:1;
+}
+.bar-label{
+  height:52px;
+  margin-top:20px;
+  padding-top:0;
+  color:#7d8ba0;
+  font-size:10px;
+  line-height:1;
+  font-weight:800;
+}
+.bar-value{
+  margin-bottom:2px;
+}
+.chart-scroll{
+  padding-bottom:12px;
+}

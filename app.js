@@ -173,7 +173,7 @@ function syncBadgeUnlocks(showCelebration=false){
 }
 function isBadgeUnlocked(b){return !!(db.meta?.badgeUnlocks?.[b.id]||b.test())}
 function openBadge(id,celebration=false){
- let b=BADGES.find(x=>x.id===id);if(!b)return;let unlocked=isBadgeUnlocked(b),r=badgeRequirement(id),cur=r[1](),goal=r[2]();
+ let b=BADGES.find(x=>x.id===id);if(!b){console.warn("Badge not found",id);return;}let unlocked=isBadgeUnlocked(b),r=badgeRequirement(id),cur=r[1](),goal=r[2]();
  $("#badgeModalName").textContent=b.name;$("#badgeModalImg").src=b.img;
  $("#badgeModalStatus").textContent=unlocked?(celebration?"BADGE UNLOCKED!":"UNLOCKED"):"LOCKED";
  $("#badgeModalStatus").className="badge-status "+(unlocked?"unlocked":"locked");
@@ -323,12 +323,15 @@ $("#prevDay").onclick=()=>{selectedDate=addDays(selectedDate,-1);renderHome()};$
 $("#exerciseBtn").onclick=()=>openModal("exerciseModal");$("#saveExercise").onclick=()=>{db.exercises.push({id:uid(),date:selectedDate,type:$("#activityType").value,minutes:+$("#exerciseMinutes").value||0,burned:+$("#exerciseBurned").value||0});$("#exerciseMinutes").value="";$("#exerciseBurned").value="";closeModal("exerciseModal");save()};
 $$("[data-period]").forEach(b=>b.onclick=()=>{period=b.dataset.period;$$("[data-period]").forEach(x=>x.classList.toggle("active",x===b));renderProgress()});
 $$("[data-filter]").forEach(b=>b.onclick=()=>{badgeFilter=b.dataset.filter;$$("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));renderBadges()});
-$("#badgeGrid").addEventListener("click",e=>{
-  const badge=e.target.closest("[data-badge-id]");
+document.addEventListener("click",e=>{
+  const badge=e.target.closest?.("[data-badge-id]");
   if(!badge)return;
   e.preventDefault();
+  e.stopPropagation();
   openBadge(badge.dataset.badgeId,false);
 });
+
+
 $$("[data-foodtab]").forEach(b=>b.onclick=()=>{foodTab=b.dataset.foodtab;renderFoodModal()});
 $("#addMeasurement").onclick=()=>{$("#measureDate").value=todayISO();$("#measureWeight").value="";$("#measureWaist").value="";openModal("measurementModal")};$("#saveMeasurement").onclick=()=>{db.measurements.push({id:uid(),date:$("#measureDate").value||todayISO(),weight:+$("#measureWeight").value||null,waist:+$("#measureWaist").value||null});closeModal("measurementModal");save()};
 $("#settingCalories").onchange=()=>{db.settings.calories=+$("#settingCalories").value||2000;save()};$("#settingProtein").onchange=()=>{db.settings.protein=+$("#settingProtein").value||160;save()};$("#settingWeightGoal").onchange=()=>{db.settings.weightGoal=+$("#settingWeightGoal").value||null;save()};
