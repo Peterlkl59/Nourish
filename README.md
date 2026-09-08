@@ -18,3 +18,24 @@ This draft consolidates the latest agreed changes.
 - Existing V2/V3 local data remains on the `nourish-v2` storage key.
 
 Note: Essentials remain a provisional starter list until the curated CoFID values are integrated.
+
+## V4.1 fixes
+- Fixed badge tapping on mobile using delegated click/tap handling.
+- Locked and unlocked badges now reliably open their detail modal.
+- Removed fake `N/A` bars for weight and waist when no measurements exist.
+- Added Saucisse measurement empty states instead.
+- Increased spacing between chart columns and bottom date labels.
+
+## V4.2 food system
+- Essentials now state whether values are per 100g, per 100ml, or per item.
+- Built-in starter values are CoFID-backed reference values.
+- Essentials open an amount picker before adding.
+- Gram/ml foods calculate kcal and protein proportionally to the entered amount.
+- Unit foods such as eggs calculate by item quantity.
+- Favourites also support amount/quantity before adding.
+- Tapping a logged food now opens a full Edit Food sheet.
+- Edit Food supports food name, meal, amount, calories, protein, save, and delete.
+- Changing the amount recalculates calories/protein proportionally.
+- Custom foods remain manual and can be saved as favourites.
+
+Reference values are intended for generic foods; use packaging for branded/prepared foods when available.

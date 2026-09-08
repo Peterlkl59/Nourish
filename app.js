@@ -2,16 +2,17 @@ const KEY="nourish-v2";
 const LEGACY="nourish-v1";
 const MEALS=["Breakfast","Lunch","Dinner","Snacks","Drinks"];
 const ESSENTIALS=[
-{name:"Large egg",calories:72,protein:6,unit:"1 egg"},
-{name:"Banana",calories:105,protein:1,unit:"1 medium"},
-{name:"Apple",calories:95,protein:0,unit:"1 medium"},
-{name:"Chicken breast (grilled)",calories:165,protein:31,unit:"100g"},
-{name:"Salmon (grilled)",calories:208,protein:25,unit:"100g"},
-{name:"Greek yoghurt (plain)",calories:59,protein:10,unit:"100g"},
-{name:"Porridge oats (dry)",calories:389,protein:13,unit:"100g"},
-{name:"White rice (cooked)",calories:130,protein:3,unit:"100g"},
-{name:"Potato (boiled)",calories:87,protein:2,unit:"100g"},
-{name:"Wholemeal bread",calories:96,protein:4,unit:"1 slice"}
+{id:"egg-boiled-medium",name:"Boiled egg",calories:72,protein:7.1,basis:1,basisUnit:"item",displayBasis:"1 medium egg (~50g)",defaultAmount:1,step:1,source:"CoFID-backed"},
+{id:"banana",name:"Banana, flesh only",calories:81,protein:1.2,basis:100,basisUnit:"g",displayBasis:"per 100g",defaultAmount:100,step:10,source:"CoFID-backed"},
+{id:"apple",name:"Apple, flesh and skin",calories:51,protein:0.6,basis:100,basisUnit:"g",displayBasis:"per 100g",defaultAmount:130,step:10,source:"CoFID-backed"},
+{id:"rice-white-boiled",name:"White long grain rice, boiled",calories:131,protein:2.8,basis:100,basisUnit:"g",displayBasis:"per 100g cooked",defaultAmount:180,step:10,source:"CoFID-backed"},
+{id:"chicken-breast-grilled",name:"Chicken breast, grilled, skinless",calories:148,protein:32,basis:100,basisUnit:"g",displayBasis:"per 100g cooked",defaultAmount:150,step:10,source:"CoFID-backed"},
+{id:"salmon-grilled",name:"Salmon, farmed, grilled",calories:239,protein:24.6,basis:100,basisUnit:"g",displayBasis:"per 100g cooked",defaultAmount:120,step:10,source:"CoFID-backed"},
+{id:"potato-boiled",name:"Potato, boiled, flesh only",calories:74,protein:1.8,basis:100,basisUnit:"g",displayBasis:"per 100g cooked",defaultAmount:175,step:10,source:"CoFID-backed"},
+{id:"porridge-oats",name:"Porridge oats, dry",calories:381,protein:10.9,basis:100,basisUnit:"g",displayBasis:"per 100g dry",defaultAmount:40,step:5,source:"CoFID-backed"},
+{id:"wholemeal-bread",name:"Wholemeal bread, average",calories:217,protein:9.4,basis:100,basisUnit:"g",displayBasis:"per 100g",defaultAmount:36,step:5,source:"CoFID-backed"},
+{id:"semi-skimmed-milk",name:"Semi-skimmed milk",calories:46,protein:3.5,basis:100,basisUnit:"ml",displayBasis:"per 100ml",defaultAmount:200,step:10,source:"CoFID-backed"},
+{id:"cheddar",name:"Cheddar cheese",calories:416,protein:25.4,basis:100,basisUnit:"g",displayBasis:"per 100g",defaultAmount:30,step:5,source:"CoFID-backed"}
 ];
 const I18N={
 en:{splashTag:"Small steps. Big results.",heroCopy:"Step by step, for a healthier you.",calories:"Calories",protein:"Protein",exercise:"Exercise",netCalories:"Net calories",meals:"Meals",addExercise:"+ Exercise",progress:"Progress",week:"Week",month:"Month",averageCalories:"Average calories",averageProtein:"Average protein",weight:"Weight",waist:"Waist",addMeasurement:"+ Add measurement",badges:"Badges",doingAmazing:"You're doing amazing!",unlockMore:"Keep going to unlock more badges.",all:"All",nutrition:"Nutrition",activity:"Activity",streaks:"Streaks",more:"More",goals:"Goals",dailyCalories:"Daily calories",dailyProtein:"Daily protein",weightGoal:"Weight goal",language:"Language",data:"Data",exportBackup:"Export backup",restoreBackup:"Restore backup",exportCsv:"Export CSV",deleteAll:"Delete All Data",home:"Home",addFood:"Add Food",essentials:"Essentials",favourites:"Favourites",custom:"Custom",duration:"Duration (min)",caloriesBurned:"Calories burned",saveExercise:"Save Exercise",measurement:"Measurement",date:"Date",saveMeasurement:"Save Measurement"},
@@ -43,7 +44,7 @@ const BADGES=[
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);
-let selectedDate=todayISO(),period="week",foodTab="custom",selectedMeal="Breakfast",badgeFilter="all",qty=1;
+let selectedDate=todayISO(),period="week",foodTab="custom",selectedMeal="Breakfast",badgeFilter="all",qty=1,selectedEssentialId=null;
 let db=load();
 
 function fresh(){return {settings:{calories:2000,protein:160,weightGoal:null,lang:"en"},foods:[],exercises:[],measurements:[],favourites:[],meta:{}}}
@@ -96,7 +97,7 @@ function mascotState(cal,pro,calT,proT){
 function mealCard(m,i){
  let icons=["☕","●","▮","●","▾"],items=foodItems(selectedDate).filter(x=>x.meal===m),cal=items.reduce((a,x)=>a+(+x.calories||0)*(+x.quantity||1),0),pro=items.reduce((a,x)=>a+(+x.protein||0)*(+x.quantity||1),0);
  return `<div class="meal-card"><div class="meal-header"><div class="meal-name"><span class="meal-icon">${icons[i]}</span>${mealLabel(m)}</div><button class="meal-add" onclick="openFood('${m}')">+ ${lang()==="fr"?"Ajouter":"Add"}</button></div>
- <div class="meal-items">${items.length?items.map(x=>`<div class="food-row"><button onclick="editFood('${x.id}')"><strong>${esc(x.name)}${(+x.quantity||1)>1?` × ${x.quantity}`:""}</strong><br><small>${Math.round((+x.calories||0)*(+x.quantity||1))} kcal · ${round1((+x.protein||0)*(+x.quantity||1))}g</small></button><span>›</span></div>`).join(""):`<div class="food-row"><small>${lang()==="fr"?"Rien d'enregistré":"Nothing logged yet"}</small></div>`}</div>
+ <div class="meal-items">${items.length?items.map(x=>`<div class="food-row"><button onclick="editFood('${x.id}')"><strong>${esc(x.name)}${x.amount?` · ${x.amount}${x.amountUnit==="item"?(x.amount==1?" item":" items"):x.amountUnit}`:((+x.quantity||1)>1?` × ${x.quantity}`:"")}</strong><br><small>${Math.round((+x.calories||0)*(+x.quantity||1))} kcal · ${round1((+x.protein||0)*(+x.quantity||1))}g</small></button><span>›</span></div>`).join(""):`<div class="food-row"><small>${lang()==="fr"?"Rien d'enregistré":"Nothing logged yet"}</small></div>`}</div>
  <div class="meal-total"><span>${Math.round(cal)} kcal</span><span>${round1(pro)}g protein</span></div></div>`
 }
 function renderProgress(){
@@ -126,7 +127,12 @@ function renderMeasurementCharts(){
  renderMeasureBars($("#weightChart"),weights,"weight");renderMeasureBars($("#waistChart"),waists,"waist")
 }
 function renderMeasureBars(el,items,key){
- if(!items.length){el.innerHTML=`<div class="bar-item na"><div class="bar-value">N/A</div><div class="bar-rail"></div><div class="bar-label">N/A</div></div>`;return}
+ if(!items.length){
+   let title=key==="weight"?(lang()==="fr"?"Aucune donnée de poids":"No weight data yet"):(lang()==="fr"?"Aucune donnée de tour de taille":"No waist data yet");
+   let copy=lang()==="fr"?"Ajoutez une mesure pour commencer à suivre votre évolution.":"Add a measurement to start tracking your progress.";
+   el.innerHTML=`<div class="measurement-empty"><img src="saucisse-scale.png" alt=""><strong>${title}</strong><span>${copy}</span></div>`;
+   return
+ }
  let vals=items.map(x=>+x[key]),max=Math.max(...vals)*1.05,min=Math.min(...vals)*.95,goal=key==="weight"?+db.settings.weightGoal||null:null;
  el.innerHTML=items.map((x,i)=>{let v=+x[key],pct=Math.max(8,Math.min(100,(v-min)/(max-min||1)*80+20)),color="var(--green)";
  if(key==="weight"&&i>0){let prev=+items[i-1][key];if(goal){let prevD=Math.abs(prev-goal),curD=Math.abs(v-goal);if(curD>prevD)color="var(--red)";else{let closeness=Math.max(0,1-curD/Math.max(Math.abs(+items[0][key]-goal),1));color=closeness>.66?"var(--green)":closeness>.33?"#9bcf53":"var(--orange)"}}else color=v>prev?"var(--red)":"var(--green)"}
@@ -177,27 +183,138 @@ function openBadge(id,celebration=false){
 }
 function renderBadges(){
  syncBadgeUnlocks(false);let unlocked=BADGES.filter(b=>isBadgeUnlocked(b)).length;$("#badgeCount").textContent=`${unlocked} / 20 collected`;$("#badgeProgress").style.width=`${unlocked/20*100}%`;
- $("#badgeGrid").innerHTML=BADGES.filter(b=>badgeFilter==="all"||b.cat===badgeFilter).map(b=>{let ok=isBadgeUnlocked(b);return `<button class="badge ${ok?"":"locked"}" onclick="openBadge('${b.id}')"><div class="badge-art"><img src="${b.img}" alt=""></div><strong>${b.name}</strong><small>${ok?"✓":""}</small></button>`}).join("")
+ $("#badgeGrid").innerHTML=BADGES.filter(b=>badgeFilter==="all"||b.cat===badgeFilter).map(b=>{let ok=isBadgeUnlocked(b);return `<button type="button" class="badge ${ok?"":"locked"}" data-badge-id="${b.id}"><div class="badge-art"><img src="${b.img}" alt=""></div><strong>${b.name}</strong><small>${ok?"✓":""}</small></button>`}).join("")
 }
 function renderMore(){$("#settingCalories").value=db.settings.calories||2000;$("#settingProtein").value=db.settings.protein||160;$("#settingWeightGoal").value=db.settings.weightGoal??""}
 function showPage(id){$$(".page").forEach(p=>p.classList.toggle("active",p.id===id));$$("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));if(id==="progressPage")renderProgress();if(id==="badgesPage")renderBadges()}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}function round1(n){return Math.round((+n||0)*10)/10}
 function openModal(id){$("#"+id).classList.add("open")}function closeModal(id){$("#"+id).classList.remove("open")}
 
-function openFood(meal){selectedMeal=meal;foodTab="custom";qty=1;renderFoodModal();openModal("foodModal")}
+function openFood(meal){selectedMeal=meal;foodTab="custom";qty=1;selectedEssentialId=null;renderFoodModal();openModal("foodModal")}
 function renderFoodModal(){
  $$(".food-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.foodtab===foodTab));
  let c=$("#foodTabContent");
- if(foodTab==="essentials"){c.innerHTML=`<div class="food-list-card">${ESSENTIALS.map((f,i)=>`<div class="essential-row"><div><strong>${f.name}</strong><small>${f.calories} kcal · ${f.protein}g protein · ${f.unit}</small></div><button class="circle-add" onclick="quickEssential(${i})">+</button></div>`).join("")}</div><p style="font-size:11px;color:var(--muted);margin:10px 2px">Starter values only. Check packaging/portion sizes for exact nutrition.</p>`}
- if(foodTab==="favourites"){c.innerHTML=db.favourites.length?`<div class="food-list-card">${db.favourites.map(f=>`<div class="essential-row"><div><strong>${esc(f.name)}</strong><small>${f.calories} kcal · ${f.protein}g</small></div><button class="circle-add" onclick="quickFavourite('${f.id}')">+</button></div>`).join("")}</div>`:`<div class="card" style="padding:18px">No favourites yet.</div>`}
- if(foodTab==="custom"){c.innerHTML=`<div class="custom-form"><label>Food name<input id="customName"></label><div class="two"><label>Calories<input id="customCalories" type="number" inputmode="numeric"></label><label>Protein (g)<input id="customProtein" type="number" step="0.1" inputmode="decimal"></label></div><div class="qty-line"><strong>Quantity</strong><div class="qty-ctrl"><button onclick="changeQty(-1)">−</button><b id="customQty">${qty}</b><button onclick="changeQty(1)">+</button></div></div><label style="display:flex;align-items:center;gap:8px"><input id="favCheck" type="checkbox" style="width:auto"> Save as favourite</label><button class="primary" onclick="saveCustom()">Add to diary</button></div>`}
+ if(foodTab==="essentials"){
+   c.innerHTML=`<div class="food-list-card">${ESSENTIALS.map((f,i)=>`
+   <button type="button" class="essential-row essential-select" data-essential-id="${f.id}">
+     <div><strong>${f.name}</strong><small>${f.calories} kcal · ${f.protein}g protein · ${f.displayBasis}</small></div><span>›</span>
+   </button>`).join("")}</div>
+   <p class="food-source-note">Reference nutrition values are standard values. Amounts are calculated from the quantity you enter; packaged foods can differ, so use the label when available.</p>`;
+   c.querySelectorAll("[data-essential-id]").forEach(b=>b.addEventListener("click",()=>openEssentialAmount(b.dataset.essentialId)));
+ }
+ if(foodTab==="favourites"){
+   c.innerHTML=db.favourites.length?`<div class="food-list-card">${db.favourites.map(f=>`
+   <button type="button" class="essential-row essential-select" data-favourite-id="${f.id}">
+     <div><strong>${esc(f.name)}</strong><small>${round1(f.calories)} kcal · ${round1(f.protein)}g protein ${f.displayBasis?`· ${esc(f.displayBasis)}`:""}</small></div><span>›</span>
+   </button>`).join("")}</div>`:`<div class="card food-empty">No favourites yet.</div>`;
+   c.querySelectorAll("[data-favourite-id]").forEach(b=>b.addEventListener("click",()=>openFavouriteAmount(b.dataset.favouriteId)));
+ }
+ if(foodTab==="custom"){
+   c.innerHTML=`<div class="custom-form">
+   <label>Food name<input id="customName"></label>
+   <div class="two"><label>Calories per item<input id="customCalories" type="number" inputmode="numeric"></label><label>Protein per item (g)<input id="customProtein" type="number" step="0.1" inputmode="decimal"></label></div>
+   <div class="qty-line"><strong>Quantity</strong><div class="qty-ctrl"><button type="button" onclick="changeQty(-1)">−</button><b id="customQty">${qty}</b><button type="button" onclick="changeQty(1)">+</button></div></div>
+   <div class="food-total-preview" id="customTotalPreview">0 kcal · 0g protein</div>
+   <label class="check-save"><input id="favCheck" type="checkbox"> Save as favourite</label>
+   <button class="primary" onclick="saveCustom()">Add to diary</button></div>`;
+   $("#customCalories").addEventListener("input",updateCustomPreview);
+   $("#customProtein").addEventListener("input",updateCustomPreview);
+   updateCustomPreview();
+ }
 }
-function mergeFood(obj){let same=db.foods.find(x=>x.date===selectedDate&&x.meal===selectedMeal&&x.name.toLowerCase()===obj.name.toLowerCase()&&+x.calories===+obj.calories&&+x.protein===+obj.protein);if(same)same.quantity=(+same.quantity||1)+(+obj.quantity||1);else db.foods.push(obj)}
-function quickEssential(i){let f=ESSENTIALS[i];mergeFood({id:uid(),date:selectedDate,meal:selectedMeal,name:f.name,calories:f.calories,protein:f.protein,quantity:1});closeModal("foodModal");save()}
-function quickFavourite(id){let f=db.favourites.find(x=>x.id===id);if(f){mergeFood({id:uid(),date:selectedDate,meal:selectedMeal,name:f.name,calories:f.calories,protein:f.protein,quantity:1});closeModal("foodModal");save()}}
-function changeQty(n){qty=Math.max(1,qty+n);$("#customQty").textContent=qty}
-function saveCustom(){let name=$("#customName").value.trim();if(!name)return;let obj={id:uid(),date:selectedDate,meal:selectedMeal,name,calories:+$("#customCalories").value||0,protein:+$("#customProtein").value||0,quantity:qty};mergeFood(obj);if($("#favCheck").checked&&!db.favourites.some(f=>f.name.toLowerCase()===name.toLowerCase()))db.favourites.push({id:uid(),name,calories:obj.calories,protein:obj.protein});qty=1;closeModal("foodModal");save()}
-function editFood(id){let x=db.foods.find(f=>f.id===id);if(!x)return;let n=prompt("Food name",x.name);if(n===null)return;x.name=n;let c=prompt("Calories per item",x.calories);if(c!==null)x.calories=+c||0;let p=prompt("Protein per item (g)",x.protein);if(p!==null)x.protein=+p||0;let q=prompt("Quantity",x.quantity||1);if(q!==null)x.quantity=Math.max(1,+q||1);save()}
+function mergeFood(obj){
+ let same=db.foods.find(x=>x.date===selectedDate&&x.meal===selectedMeal&&x.name.toLowerCase()===obj.name.toLowerCase()&&+x.calories===+obj.calories&&+x.protein===+obj.protein&&String(x.amountUnit||"item")===String(obj.amountUnit||"item"));
+ if(same){
+   if(obj.amountUnit&&obj.amountUnit!=="item"){
+     same.amount=(+same.amount||0)+(+obj.amount||0);
+     same.quantity=1;
+     same.calories=+obj.calories;
+     same.protein=+obj.protein;
+     same.basis=+obj.basis||100;
+   }else{
+     same.quantity=(+same.quantity||1)+(+obj.quantity||1);
+   }
+ }else db.foods.push(obj)
+}
+function calcByAmount(food,amount){
+ let ratio=(+amount||0)/(+food.basis||1);
+ return {calories:round1((+food.calories||0)*ratio),protein:round1((+food.protein||0)*ratio)}
+}
+function openEssentialAmount(id){
+ let f=ESSENTIALS.find(x=>x.id===id);if(!f)return;
+ selectedEssentialId=id;
+ let unit=f.basisUnit==="item"?"item":f.basisUnit;
+ let amount=f.defaultAmount||f.basis;
+ let c=$("#foodTabContent");
+ c.innerHTML=`<div class="amount-editor">
+   <button type="button" class="back-mini" id="backEssentials">‹ Essentials</button>
+   <h3>${f.name}</h3>
+   <p class="nutrition-reference">${f.calories} kcal · ${f.protein}g protein <strong>${f.displayBasis}</strong></p>
+   <label>Amount</label>
+   <div class="amount-control">
+     <button type="button" id="amountMinus">−</button>
+     <div><input id="essentialAmount" type="number" inputmode="decimal" step="${f.step}" value="${amount}"><span>${unit==="item"?(amount==1?"item":"items"):unit}</span></div>
+     <button type="button" id="amountPlus">+</button>
+   </div>
+   <div class="food-total-box"><span>Total</span><strong id="essentialTotal"></strong></div>
+   <button class="primary" id="addEssentialToDiary">Add to diary</button>
+ </div>`;
+ const input=$("#essentialAmount");
+ const update=()=>{let a=Math.max(f.basisUnit==="item"?1:0,+input.value||0),v=calcByAmount(f,a);$("#essentialTotal").textContent=`${v.calories} kcal · ${v.protein}g protein`;let span=input.nextElementSibling;if(span&&f.basisUnit==="item")span.textContent=a==1?"item":"items"};
+ update();
+ $("#backEssentials").onclick=()=>{foodTab="essentials";renderFoodModal()};
+ $("#amountMinus").onclick=()=>{input.value=Math.max(f.basisUnit==="item"?1:0,(+input.value||0)-f.step);update()};
+ $("#amountPlus").onclick=()=>{input.value=(+input.value||0)+f.step;update()};
+ input.addEventListener("input",update);
+ $("#addEssentialToDiary").onclick=()=>{
+   let a=Math.max(f.basisUnit==="item"?1:0,+input.value||0);
+   let v=calcByAmount(f,a);
+   let obj={id:uid(),date:selectedDate,meal:selectedMeal,name:f.name,calories:v.calories,protein:v.protein,quantity:1,amount:a,amountUnit:f.basisUnit,basis:f.basis,sourceType:"essential",essentialId:f.id,displayBasis:f.displayBasis};
+   mergeFood(obj);closeModal("foodModal");save()
+ }
+}
+function openFavouriteAmount(id){
+ let f=db.favourites.find(x=>x.id===id);if(!f)return;
+ // Favourites saved from custom foods are item-based by default.
+ let basis=f.basis||1,unit=f.amountUnit||"item",step=unit==="item"?1:10,amount=unit==="item"?1:(f.defaultAmount||basis);
+ let pseudo={...f,basis,basisUnit:unit,step,defaultAmount:amount,displayBasis:f.displayBasis||(unit==="item"?"per item":`per ${basis}${unit}`)};
+ selectedEssentialId=null;
+ let c=$("#foodTabContent");
+ c.innerHTML=`<div class="amount-editor">
+   <button type="button" class="back-mini" id="backFavs">‹ Favourites</button>
+   <h3>${esc(f.name)}</h3>
+   <p class="nutrition-reference">${round1(f.calories)} kcal · ${round1(f.protein)}g protein <strong>${esc(pseudo.displayBasis)}</strong></p>
+   <label>Amount</label>
+   <div class="amount-control"><button type="button" id="amountMinus">−</button><div><input id="essentialAmount" type="number" inputmode="decimal" step="${step}" value="${amount}"><span>${unit==="item"?"item":unit}</span></div><button type="button" id="amountPlus">+</button></div>
+   <div class="food-total-box"><span>Total</span><strong id="essentialTotal"></strong></div>
+   <button class="primary" id="addEssentialToDiary">Add to diary</button>
+ </div>`;
+ let input=$("#essentialAmount"),update=()=>{let a=Math.max(unit==="item"?1:0,+input.value||0),v=calcByAmount(pseudo,a);$("#essentialTotal").textContent=`${v.calories} kcal · ${v.protein}g protein`};update();
+ $("#backFavs").onclick=()=>{foodTab="favourites";renderFoodModal()};
+ $("#amountMinus").onclick=()=>{input.value=Math.max(unit==="item"?1:0,(+input.value||0)-step);update()};
+ $("#amountPlus").onclick=()=>{input.value=(+input.value||0)+step;update()};input.addEventListener("input",update);
+ $("#addEssentialToDiary").onclick=()=>{let a=Math.max(unit==="item"?1:0,+input.value||0),v=calcByAmount(pseudo,a);mergeFood({id:uid(),date:selectedDate,meal:selectedMeal,name:f.name,calories:v.calories,protein:v.protein,quantity:1,amount:a,amountUnit:unit,basis:basis,sourceType:"favourite",favouriteId:f.id,displayBasis:pseudo.displayBasis});closeModal("foodModal");save()}
+}
+function updateCustomPreview(){let c=+($("#customCalories")?.value||0),p=+($("#customProtein")?.value||0);let el=$("#customTotalPreview");if(el)el.textContent=`${round1(c*qty)} kcal · ${round1(p*qty)}g protein`}
+function changeQty(n){qty=Math.max(1,qty+n);let q=$("#customQty");if(q)q.textContent=qty;updateCustomPreview()}
+function saveCustom(){
+ let name=$("#customName").value.trim();if(!name)return;
+ let perCal=+$("#customCalories").value||0,perPro=+$("#customProtein").value||0;
+ let obj={id:uid(),date:selectedDate,meal:selectedMeal,name,calories:round1(perCal*qty),protein:round1(perPro*qty),quantity:1,amount:qty,amountUnit:"item",basis:1,sourceType:"custom",perItemCalories:perCal,perItemProtein:perPro,displayBasis:"per item"};
+ mergeFood(obj);
+ if($("#favCheck").checked&&!db.favourites.some(f=>f.name.toLowerCase()===name.toLowerCase()))db.favourites.push({id:uid(),name,calories:perCal,protein:perPro,basis:1,amountUnit:"item",displayBasis:"per item"});
+ qty=1;closeModal("foodModal");save()
+}
+function openEditFood(id){
+ let x=db.foods.find(f=>f.id===id);if(!x)return;
+ $("#editFoodId").value=x.id;$("#editFoodName").value=x.name;$("#editFoodMeal").value=x.meal;
+ let unit=x.amountUnit||"item",amount=x.amount??(x.quantity||1);
+ $("#editFoodAmount").value=amount;$("#editFoodUnit").textContent=unit==="item"?(amount==1?"item":"items"):unit;
+ $("#editFoodCalories").value=round1(x.calories||0);$("#editFoodProtein").value=round1(x.protein||0);
+ $("#editFoodBasisNote").textContent=x.displayBasis?`Reference: ${x.displayBasis}`:"";
+ openModal("editFoodModal")
+}
+function editFood(id){openEditFood(id)}
 function download(name,text,type="application/json"){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 
 $$("nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));$$("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
@@ -206,6 +323,12 @@ $("#prevDay").onclick=()=>{selectedDate=addDays(selectedDate,-1);renderHome()};$
 $("#exerciseBtn").onclick=()=>openModal("exerciseModal");$("#saveExercise").onclick=()=>{db.exercises.push({id:uid(),date:selectedDate,type:$("#activityType").value,minutes:+$("#exerciseMinutes").value||0,burned:+$("#exerciseBurned").value||0});$("#exerciseMinutes").value="";$("#exerciseBurned").value="";closeModal("exerciseModal");save()};
 $$("[data-period]").forEach(b=>b.onclick=()=>{period=b.dataset.period;$$("[data-period]").forEach(x=>x.classList.toggle("active",x===b));renderProgress()});
 $$("[data-filter]").forEach(b=>b.onclick=()=>{badgeFilter=b.dataset.filter;$$("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));renderBadges()});
+$("#badgeGrid").addEventListener("click",e=>{
+  const badge=e.target.closest("[data-badge-id]");
+  if(!badge)return;
+  e.preventDefault();
+  openBadge(badge.dataset.badgeId,false);
+});
 $$("[data-foodtab]").forEach(b=>b.onclick=()=>{foodTab=b.dataset.foodtab;renderFoodModal()});
 $("#addMeasurement").onclick=()=>{$("#measureDate").value=todayISO();$("#measureWeight").value="";$("#measureWaist").value="";openModal("measurementModal")};$("#saveMeasurement").onclick=()=>{db.measurements.push({id:uid(),date:$("#measureDate").value||todayISO(),weight:+$("#measureWeight").value||null,waist:+$("#measureWaist").value||null});closeModal("measurementModal");save()};
 $("#settingCalories").onchange=()=>{db.settings.calories=+$("#settingCalories").value||2000;save()};$("#settingProtein").onchange=()=>{db.settings.protein=+$("#settingProtein").value||160;save()};$("#settingWeightGoal").onchange=()=>{db.settings.weightGoal=+$("#settingWeightGoal").value||null;save()};
@@ -213,6 +336,29 @@ $("#exportBackup").onclick=()=>download(`step-by-step-backup-${todayISO()}.json`
 $("#restoreBackup").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let x=JSON.parse(await f.text());if(!x.settings||!Array.isArray(x.foods))throw 0;if(confirm("Replace the data on this device with this backup?")){db=x;save()}}catch{alert("Invalid backup.")}e.target.value=""};
 $("#exportCsv").onclick=()=>{let rows=[["date","meal","food","quantity","calories_per_item","protein_g_per_item"],...db.foods.map(x=>[x.date,x.meal,x.name,x.quantity,x.calories,x.protein])];download(`step-by-step-food-${todayISO()}.csv`,rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n"),"text/csv")};
 $("#deleteAll").onclick=()=>{if(confirm("Delete ALL Step by Step! data on this device?")&&confirm("Final confirmation: delete everything?")){localStorage.removeItem(KEY);db=fresh();selectedDate=todayISO();save()}};
+
+$("#editFoodAmount").addEventListener("input",()=>{
+ let id=$("#editFoodId").value,x=db.foods.find(f=>f.id===id);if(!x)return;
+ let newAmount=Math.max(x.amountUnit==="item"?1:0,+$("#editFoodAmount").value||0),oldAmount=+x.amount||(+x.quantity||1);
+ if(oldAmount>0){
+   $("#editFoodCalories").value=round1((+x.calories||0)*(newAmount/oldAmount));
+   $("#editFoodProtein").value=round1((+x.protein||0)*(newAmount/oldAmount));
+ }
+ $("#editFoodUnit").textContent=(x.amountUnit||"item")==="item"?(newAmount==1?"item":"items"):(x.amountUnit||"");
+});
+$("#saveFoodEdit").onclick=()=>{
+ let id=$("#editFoodId").value,x=db.foods.find(f=>f.id===id);if(!x)return;
+ x.name=$("#editFoodName").value.trim()||x.name;x.meal=$("#editFoodMeal").value;
+ x.amount=Math.max((x.amountUnit||"item")==="item"?1:0,+$("#editFoodAmount").value||0);
+ x.quantity=1;x.calories=+$("#editFoodCalories").value||0;x.protein=+$("#editFoodProtein").value||0;
+ closeModal("editFoodModal");save()
+};
+$("#deleteFoodEdit").onclick=()=>{
+ let id=$("#editFoodId").value;if(confirm(lang()==="fr"?"Supprimer cet aliment du journal ?":"Delete this food from the diary?")){
+   db.foods=db.foods.filter(f=>f.id!==id);closeModal("editFoodModal");save()
+ }
+};
+
 if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js");
 render();
 setTimeout(()=>{$("#splash").classList.add("hide");$("#app").classList.remove("hidden");setTimeout(()=>$("#splash").remove(),400)},700);

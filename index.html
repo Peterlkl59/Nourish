@@ -216,6 +216,26 @@
  </div>
 </div>
 
+
+<div class="modal" id="editFoodModal">
+ <div class="sheet">
+  <div class="sheet-head"><h2>Edit Food</h2><button class="x" data-close="editFoodModal">×</button></div>
+  <input type="hidden" id="editFoodId">
+  <label>Food name<input id="editFoodName"></label>
+  <label>Meal<select id="editFoodMeal">
+    <option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option><option value="Snacks">Snacks</option><option value="Drinks">Drinks</option>
+  </select></label>
+  <label>Amount<div class="edit-amount-field"><input id="editFoodAmount" type="number" step="0.1" inputmode="decimal"><span id="editFoodUnit"></span></div></label>
+  <p class="nutrition-reference" id="editFoodBasisNote"></p>
+  <div class="two">
+    <label>Calories<input id="editFoodCalories" type="number" step="0.1" inputmode="decimal"></label>
+    <label>Protein (g)<input id="editFoodProtein" type="number" step="0.1" inputmode="decimal"></label>
+  </div>
+  <button class="primary" id="saveFoodEdit">Save changes</button>
+  <button class="danger" id="deleteFoodEdit">Delete from diary</button>
+ </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
