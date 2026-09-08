@@ -1,10 +1,10 @@
 {
-  "name": "Nourish",
+  "name": "Nourish with Saucisse",
   "short_name": "Nourish",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f7f4ed",
-  "theme_color": "#f7f4ed",
+  "background_color": "#f8fbff",
+  "theme_color": "#f8fbff",
   "icons": [
     {
       "src": "icon-192.png",
