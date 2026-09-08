@@ -35,7 +35,7 @@
   <div class="hero card">
     <div>
       <h1 id="helloText">Good morning!</h1>
-      <p data-i18n="heroCopy">Small steps today to a healthier you.</p>
+      <p data-i18n="heroCopy">Step by step, for a healthier you.</p>
     </div>
     <div class="hero-sun">☀</div>
     <img src="saucisse-running.png" class="hero-dog" alt="Saucisse">
@@ -96,11 +96,13 @@
   <div class="chart-card card">
     <div class="chart-title"><span>🔥</span><h2 data-i18n="calories">Calories</h2></div>
     <div class="chart-scroll"><div class="bar-chart" id="calorieChart"></div></div>
+    <p class="monthly-note" data-monthly-note hidden></p>
   </div>
 
   <div class="chart-card card">
     <div class="chart-title"><span>●</span><h2 data-i18n="protein">Protein</h2></div>
     <div class="chart-scroll"><div class="bar-chart" id="proteinChart"></div></div>
+    <p class="monthly-note" data-monthly-note hidden></p>
   </div>
 
   <div class="chart-card card">
@@ -199,6 +201,18 @@
    <label><span data-i18n="waist">Waist</span><input id="measureWaist" type="number" step="0.1" inputmode="decimal"></label>
   </div>
   <button class="primary" id="saveMeasurement" data-i18n="saveMeasurement">Save Measurement</button>
+ </div>
+</div>
+
+
+<div class="modal" id="badgeModal">
+ <div class="sheet badge-sheet">
+  <div class="sheet-head"><h2 id="badgeModalName"></h2><button class="x" data-close="badgeModal">×</button></div>
+  <img id="badgeModalImg" alt="Saucisse badge">
+  <div id="badgeModalStatus" class="badge-status"></div>
+  <p id="badgeModalText"></p>
+  <div class="badge-detail" id="badgeModalProgress"></div>
+  <button class="primary" data-close="badgeModal">OK</button>
  </div>
 </div>
 

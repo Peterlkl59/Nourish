@@ -1,27 +1,20 @@
-# Step by Step! with Saucisse — V3
+# Step by Step! with Saucisse — V4 Draft
 
-This build mirrors the approved visual concept more closely.
+This draft consolidates the latest agreed changes.
 
-## Key changes
-- Renamed to Step by Step! with Saucisse
-- Home screen has previous/next day controls
-- Stronger blue/yellow meal card treatment
-- Progress tab redesigned with horizontally scrollable bar charts
-- 7-ish bars visible at once on mobile, scroll for more
-- Missing diary data shown as N/A
-- Calories: green at/below target, red above target
-- Protein: green at/above target, red below target
-- Weight/waist charts only show recorded measurement dates
-- Weight colours react to movement toward/away from goal
-- Saucisse mood above charts changes based on averages
-- New Badges tab with 20 unlockable badges and progress
-- Food Log tab removed
-- Add Food uses Essentials / Favourites / Custom
-- Keeps the V2 local-storage key to preserve existing V2 data where possible
+- Home greeting is **Hello!** in both English and French.
+- Tagline: **Step by step, for a healthier you.**
+- Add Food opens on **Custom**, with Favourites and Essentials available as tabs.
+- Daily charts: weekday above value, then bar, then `DD/MM`.
+- Monthly charts: `MMM YY`; calorie/protein bars are average per logged day.
+- Monthly calorie/protein charts include a small explanatory info note.
+- Weight/waist charts only show dates on which a measurement exists.
+- Badge cards are tappable.
+- Locked badge modal shows name, unlock requirement and progress.
+- Unlocked badge modal congratulates the user and stores an unlock date.
+- Badge unlocks are permanent once earned.
+- New badge unlocks trigger an in-app celebration.
+- 20-badge system retained.
+- Existing V2/V3 local data remains on the `nourish-v2` storage key.
 
-## Important note on Essentials
-The included food values are a small starter list and are not a substitute for product labels or a validated food-composition database. Before relying on this publicly, replace/validate the list against an authoritative food-composition source.
-
-## GitHub Pages update
-Upload all files from this folder to the root of your repository and commit to `main`.
-GitHub Pages will redeploy automatically.
+Note: Essentials remain a provisional starter list until the curated CoFID values are integrated.

@@ -14,8 +14,8 @@ const ESSENTIALS=[
 {name:"Wholemeal bread",calories:96,protein:4,unit:"1 slice"}
 ];
 const I18N={
-en:{splashTag:"Small steps. Big results.",heroCopy:"Small steps today to a healthier you.",calories:"Calories",protein:"Protein",exercise:"Exercise",netCalories:"Net calories",meals:"Meals",addExercise:"+ Exercise",progress:"Progress",week:"Week",month:"Month",averageCalories:"Average calories",averageProtein:"Average protein",weight:"Weight",waist:"Waist",addMeasurement:"+ Add measurement",badges:"Badges",doingAmazing:"You're doing amazing!",unlockMore:"Keep going to unlock more badges.",all:"All",nutrition:"Nutrition",activity:"Activity",streaks:"Streaks",more:"More",goals:"Goals",dailyCalories:"Daily calories",dailyProtein:"Daily protein",weightGoal:"Weight goal",language:"Language",data:"Data",exportBackup:"Export backup",restoreBackup:"Restore backup",exportCsv:"Export CSV",deleteAll:"Delete All Data",home:"Home",addFood:"Add Food",essentials:"Essentials",favourites:"Favourites",custom:"Custom",duration:"Duration (min)",caloriesBurned:"Calories burned",saveExercise:"Save Exercise",measurement:"Measurement",date:"Date",saveMeasurement:"Save Measurement"},
-fr:{splashTag:"Petits pas. Grands résultats.",heroCopy:"De petits pas aujourd'hui pour être en meilleure santé.",calories:"Calories",protein:"Protéines",exercise:"Exercice",netCalories:"Calories nettes",meals:"Repas",addExercise:"+ Exercice",progress:"Progrès",week:"Semaine",month:"Mois",averageCalories:"Calories moyennes",averageProtein:"Protéines moyennes",weight:"Poids",waist:"Tour de taille",addMeasurement:"+ Ajouter une mesure",badges:"Badges",doingAmazing:"Tu fais un super travail !",unlockMore:"Continue pour débloquer plus de badges.",all:"Tous",nutrition:"Nutrition",activity:"Activité",streaks:"Séries",more:"Plus",goals:"Objectifs",dailyCalories:"Calories quotidiennes",dailyProtein:"Protéines quotidiennes",weightGoal:"Objectif de poids",language:"Langue",data:"Données",exportBackup:"Exporter une sauvegarde",restoreBackup:"Restaurer une sauvegarde",exportCsv:"Exporter en CSV",deleteAll:"Supprimer toutes les données",home:"Accueil",addFood:"Ajouter un aliment",essentials:"Essentiels",favourites:"Favoris",custom:"Personnalisé",duration:"Durée (min)",caloriesBurned:"Calories brûlées",saveExercise:"Enregistrer l'exercice",measurement:"Mesure",date:"Date",saveMeasurement:"Enregistrer la mesure"}
+en:{splashTag:"Small steps. Big results.",heroCopy:"Step by step, for a healthier you.",calories:"Calories",protein:"Protein",exercise:"Exercise",netCalories:"Net calories",meals:"Meals",addExercise:"+ Exercise",progress:"Progress",week:"Week",month:"Month",averageCalories:"Average calories",averageProtein:"Average protein",weight:"Weight",waist:"Waist",addMeasurement:"+ Add measurement",badges:"Badges",doingAmazing:"You're doing amazing!",unlockMore:"Keep going to unlock more badges.",all:"All",nutrition:"Nutrition",activity:"Activity",streaks:"Streaks",more:"More",goals:"Goals",dailyCalories:"Daily calories",dailyProtein:"Daily protein",weightGoal:"Weight goal",language:"Language",data:"Data",exportBackup:"Export backup",restoreBackup:"Restore backup",exportCsv:"Export CSV",deleteAll:"Delete All Data",home:"Home",addFood:"Add Food",essentials:"Essentials",favourites:"Favourites",custom:"Custom",duration:"Duration (min)",caloriesBurned:"Calories burned",saveExercise:"Save Exercise",measurement:"Measurement",date:"Date",saveMeasurement:"Save Measurement"},
+fr:{splashTag:"Petits pas. Grands résultats.",heroCopy:"Pas à pas, vers une meilleure santé.",calories:"Calories",protein:"Protéines",exercise:"Exercice",netCalories:"Calories nettes",meals:"Repas",addExercise:"+ Exercice",progress:"Progrès",week:"Semaine",month:"Mois",averageCalories:"Calories moyennes",averageProtein:"Protéines moyennes",weight:"Poids",waist:"Tour de taille",addMeasurement:"+ Ajouter une mesure",badges:"Badges",doingAmazing:"Tu fais un super travail !",unlockMore:"Continue pour débloquer plus de badges.",all:"Tous",nutrition:"Nutrition",activity:"Activité",streaks:"Séries",more:"Plus",goals:"Objectifs",dailyCalories:"Calories quotidiennes",dailyProtein:"Protéines quotidiennes",weightGoal:"Objectif de poids",language:"Langue",data:"Données",exportBackup:"Exporter une sauvegarde",restoreBackup:"Restaurer une sauvegarde",exportCsv:"Exporter en CSV",deleteAll:"Supprimer toutes les données",home:"Accueil",addFood:"Ajouter un aliment",essentials:"Essentiels",favourites:"Favoris",custom:"Personnalisé",duration:"Durée (min)",caloriesBurned:"Calories brûlées",saveExercise:"Enregistrer l'exercice",measurement:"Mesure",date:"Date",saveMeasurement:"Enregistrer la mesure"}
 };
 const MEAL_FR={Breakfast:"Petit-déjeuner",Lunch:"Déjeuner",Dinner:"Dîner",Snacks:"Encas",Drinks:"Boissons"};
 const BADGES=[
@@ -43,20 +43,27 @@ const BADGES=[
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const todayISO=()=>new Date().toISOString().slice(0,10);
-let selectedDate=todayISO(),period="week",foodTab="essentials",selectedMeal="Breakfast",badgeFilter="all",qty=1;
+let selectedDate=todayISO(),period="week",foodTab="custom",selectedMeal="Breakfast",badgeFilter="all",qty=1;
 let db=load();
 
 function fresh(){return {settings:{calories:2000,protein:160,weightGoal:null,lang:"en"},foods:[],exercises:[],measurements:[],favourites:[],meta:{}}}
 function load(){try{let raw=localStorage.getItem(KEY);if(raw)return Object.assign(fresh(),JSON.parse(raw));let old=localStorage.getItem(LEGACY);if(old)return Object.assign(fresh(),JSON.parse(old));}catch(e){}return fresh()}
-function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render();syncBadgeUnlocks(true)}
 function lang(){return db.settings.lang||"en"}function t(k){return I18N[lang()][k]||k}
 function applyI18N(){$$("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));$$("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang()))}
 function mealLabel(m){return lang()==="fr"?MEAL_FR[m]:m}
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()}
 function addDays(ds,n){let d=new Date(ds+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
 function fmtDay(ds){return new Date(ds+"T12:00:00").toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"})}
-function shortDay(ds){return new Date(ds+"T12:00:00").toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{weekday:"short",day:"numeric",month:"short"})}
-function monthLabel(ds){return new Date(ds+"T12:00:00").toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{month:"short",year:"numeric"})}
+function shortDay(ds){
+ let d=new Date(ds+"T12:00:00");
+ return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`
+}
+function monthLabel(ds){
+ let d=new Date(ds+"T12:00:00");
+ let m=d.toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{month:"short"}).replace(".","");
+ return `${m.charAt(0).toUpperCase()+m.slice(1)} ${String(d.getFullYear()).slice(-2)}`
+}
 function foodItems(d){return db.foods.filter(x=>x.date===d)}function exItems(d){return db.exercises.filter(x=>x.date===d)}
 function totals(d){let f=foodItems(d),e=exItems(d);let eaten=f.reduce((a,x)=>a+(+x.calories||0)*(+x.quantity||1),0),pro=f.reduce((a,x)=>a+(+x.protein||0)*(+x.quantity||1),0),burned=e.reduce((a,x)=>a+(+x.burned||0),0),mins=e.reduce((a,x)=>a+(+x.minutes||0),0);return {eaten,pro,burned,mins,net:eaten-burned}}
 function loggedDays(){return [...new Set(db.foods.map(x=>x.date))].sort()}
@@ -75,7 +82,7 @@ function renderHome(){
  let tt=totals(selectedDate),calT=+db.settings.calories||2000,proT=+db.settings.protein||160;
  $("#homeCalories").textContent=Math.round(tt.eaten);$("#homeProtein").textContent=Math.round(tt.pro)+"g";$("#homeExercise").textContent=Math.round(tt.mins)+" min";$("#homeBurned").textContent=Math.round(tt.burned)+" kcal burned";$("#homeNet").textContent=Math.round(tt.net);
  $("#homeCalTarget").textContent=`/ ${calT} kcal`;$("#homeProteinTarget").textContent=`/ ${proT}g`;$("#homeNetTarget").textContent=`/ ${calT} kcal`;
- $("#helloText").textContent=lang()==="fr"?"Bonjour !":"Good morning!";
+ $("#helloText").textContent="Hello!";
  let state=mascotState(tt.net,tt.pro,calT,proT);$("#homeMascotImg").src=state.img;$("#homeMascotTitle").textContent=state.title;$("#homeMascotCopy").textContent=state.copy;
  $("#mealSections").innerHTML=MEALS.map((m,i)=>mealCard(m,i)).join("")
 }
@@ -100,16 +107,19 @@ function renderProgress(){
  renderBarChart($("#calorieChart"),data,"cal",+db.settings.calories||2000,"calorie");
  renderBarChart($("#proteinChart"),data,"pro",+db.settings.protein||160,"protein");
  renderMeasurementCharts();
+ $$("[data-monthly-note]").forEach(n=>{n.hidden=period!=="month";n.textContent=lang()==="fr"?"ⓘ Les valeurs mensuelles de calories et de protéines correspondent à la moyenne par jour enregistré.":"ⓘ Monthly calorie and protein values show the average per logged day."});
 }
 function dailyRange(n){let out=[];for(let i=n-1;i>=0;i--){let d=addDays(todayISO(),-i),t=totals(d);out.push({label:shortDay(d),date:d,cal:t.net,pro:t.pro,hasFood:foodItems(d).length>0})}return out}
-function monthlyRange(n){let now=new Date(),out=[];for(let i=n-1;i>=0;i--){let d=new Date(now.getFullYear(),now.getMonth()-i,1),y=d.getFullYear(),m=d.getMonth(),key=`${y}-${String(m+1).padStart(2,"0")}`;let ds=loggedDays().filter(x=>x.startsWith(key));let cal=ds.length?ds.reduce((a,x)=>a+totals(x).net,0)/ds.length:0,pro=ds.length?ds.reduce((a,x)=>a+totals(x).pro,0)/ds.length:0;out.push({label:d.toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{month:"short",year:"numeric"}),cal,pro,hasFood:ds.length>0})}return out}
+function monthlyRange(n){let now=new Date(),out=[];for(let i=n-1;i>=0;i--){let d=new Date(now.getFullYear(),now.getMonth()-i,1),y=d.getFullYear(),m=d.getMonth(),key=`${y}-${String(m+1).padStart(2,"0")}`;let ds=loggedDays().filter(x=>x.startsWith(key));let cal=ds.length?ds.reduce((a,x)=>a+totals(x).net,0)/ds.length:0,pro=ds.length?ds.reduce((a,x)=>a+totals(x).pro,0)/ds.length:0;out.push({label:monthLabel(`${y}-${String(m+1).padStart(2,"0")}-01`),cal,pro,hasFood:ds.length>0})}return out}
 function progressState(c,p){if(c==null||p==null)return {img:"saucisse-wave.png",title:"Let's get started!",copy:"Log a few days and Saucisse will help you read the trend."};let ct=+db.settings.calories||2000,pt=+db.settings.protein||160,cr=c/ct,pr=p/pt;if(cr>=.95&&cr<=1.05&&pr>=.95)return {img:"saucisse-celebrate.png",title:lang()==="fr"?"Super période !":"Great period!",copy:lang()==="fr"?"Tes moyennes sont très proches de tes objectifs.":"Your averages are sitting nicely around your targets."};if(cr<.8||cr>1.2||pr<.7)return {img:"saucisse-rest.png",title:lang()==="fr"?"On garde le cap.":"Keep going.",copy:lang()==="fr"?"La tendance est encore loin de la cible, mais chaque semaine compte.":"The trend is still some way from target, but every week counts."};return {img:"saucisse-proud.png",title:lang()==="fr"?"Presque !":"Nearly there!",copy:lang()==="fr"?"Tu n'es pas loin. Continue pas à pas.":"You're not far off. Keep going step by step."}}
 function renderBarChart(el,data,key,target,type){
  let max=Math.max(target,...data.filter(x=>x.hasFood).map(x=>x[key]),1)*1.15;
- el.innerHTML=data.map(x=>{if(!x.hasFood)return `<div class="bar-item na"><div class="bar-value">N/A</div><div class="bar-rail"></div><div class="bar-label">${x.label}</div></div>`;
+ el.innerHTML=data.map(x=>{if(!x.hasFood){let dow="";if(period==="week"&&x.date){dow=new Date(x.date+"T12:00:00").toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{weekday:"short"}).replace(".","");dow=dow.charAt(0).toUpperCase()+dow.slice(1)}return `<div class="bar-item na"><div class="bar-dow">${dow}</div><div class="bar-value">N/A</div><div class="bar-rail"></div><div class="bar-label">${x.label}</div></div>`;}
  let val=x[key],pct=Math.max(4,Math.min(100,val/max*100)),color;
  if(type==="calorie")color=val<=target?"var(--green)":"var(--red)";else color=val>=target?"var(--green)":"var(--red)";
- return `<div class="bar-item"><div class="bar-value">${Math.round(val)}</div><div class="bar-rail"><i class="bar-fill" style="height:${pct}%;background:${color}"></i></div><div class="bar-label">${x.label}</div></div>`}).join("");
+ let dow="";
+ if(period==="week"&&x.date){dow=new Date(x.date+"T12:00:00").toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{weekday:"short"}).replace(".","");dow=dow.charAt(0).toUpperCase()+dow.slice(1)}
+ return `<div class="bar-item"><div class="bar-dow">${dow}</div><div class="bar-value">${Math.round(val)}</div><div class="bar-rail"><i class="bar-fill" style="height:${pct}%;background:${color}"></i></div><div class="bar-label">${x.label}</div></div>`}).join("");
 }
 function renderMeasurementCharts(){
  let ms=[...db.measurements].sort((a,b)=>a.date.localeCompare(b.date)),weights=ms.filter(x=>x.weight),waists=ms.filter(x=>x.waist);
@@ -122,16 +132,59 @@ function renderMeasureBars(el,items,key){
  if(key==="weight"&&i>0){let prev=+items[i-1][key];if(goal){let prevD=Math.abs(prev-goal),curD=Math.abs(v-goal);if(curD>prevD)color="var(--red)";else{let closeness=Math.max(0,1-curD/Math.max(Math.abs(+items[0][key]-goal),1));color=closeness>.66?"var(--green)":closeness>.33?"#9bcf53":"var(--orange)"}}else color=v>prev?"var(--red)":"var(--green)"}
  return `<div class="bar-item"><div class="bar-value">${round1(v)}</div><div class="bar-rail"><i class="bar-fill" style="height:${pct}%;background:${color}"></i></div><div class="bar-label">${shortDay(x.date)}</div></div>`}).join("")
 }
+
+function badgeRequirement(id){
+ const req={
+ "first-step":["Log your first food entry.",()=>Math.min(1,db.foods.length),1],
+ "getting-started":["Complete 3 logged days.",()=>Math.min(3,loggedDays().length),3],
+ "one-week":["Complete 7 logged days.",()=>Math.min(7,loggedDays().length),7],
+ "two-weeks":["Complete 14 logged days.",()=>Math.min(14,loggedDays().length),14],
+ "month-motion":["Complete 30 logged days.",()=>Math.min(30,loggedDays().length),30],
+ "consistency-pup":["Build a 3-day logging streak.",()=>Math.min(3,maxStreak()),3],
+ "on-a-roll":["Build a 7-day logging streak.",()=>Math.min(7,maxStreak()),7],
+ "unstoppable":["Build a 30-day logging streak.",()=>Math.min(30,maxStreak()),30],
+ "protein-pup":["Hit your protein target on 1 day.",()=>Math.min(1,proteinHits()),1],
+ "protein-pro":["Hit your protein target on 7 different days.",()=>Math.min(7,proteinHits()),7],
+ "protein-champion":["Hit your protein target on 30 different days.",()=>Math.min(30,proteinHits()),30],
+ "balanced-day":["Finish a logged day within ±5% of your calorie target.",()=>Math.min(1,balancedDays()),1],
+ "balanced-week":["Finish a week with average calories within ±5% of target.",()=>balancedWeek()?1:0,1],
+ "first-workout":["Log your first exercise session.",()=>Math.min(1,db.exercises.length),1],
+ "active-pup":["Log 5 exercise sessions.",()=>Math.min(5,db.exercises.length),5],
+ "exercise-expert":["Log 25 exercise sessions.",()=>Math.min(25,db.exercises.length),25],
+ "progress-begins":["Add your first weight or waist measurement.",()=>Math.min(1,db.measurements.length),1],
+ "halfway-there":["Reach halfway from your starting weight to your goal weight.",()=>halfwayToGoal()?1:0,1],
+ "goal-getter":["Reach your weight goal.",()=>goalReached()?1:0,1],
+ "step-by-step":["Unlock the other 19 Saucisse badges.",()=>Math.min(19,Object.keys(db.meta?.badgeUnlocks||{}).filter(k=>k!=="step-by-step").length),19]
+ };
+ return req[id]||["Keep going to unlock this badge.",()=>0,1]
+}
+function syncBadgeUnlocks(showCelebration=false){
+ db.meta=db.meta||{};db.meta.badgeUnlocks=db.meta.badgeUnlocks||{};
+ let newly=[];
+ BADGES.forEach(b=>{if(b.test()&&!db.meta.badgeUnlocks[b.id]){db.meta.badgeUnlocks[b.id]=todayISO();newly.push(b)}});
+ localStorage.setItem(KEY,JSON.stringify(db));
+ if(showCelebration&&newly.length)setTimeout(()=>openBadge(newly[0].id,true),150)
+}
+function isBadgeUnlocked(b){return !!(db.meta?.badgeUnlocks?.[b.id]||b.test())}
+function openBadge(id,celebration=false){
+ let b=BADGES.find(x=>x.id===id);if(!b)return;let unlocked=isBadgeUnlocked(b),r=badgeRequirement(id),cur=r[1](),goal=r[2]();
+ $("#badgeModalName").textContent=b.name;$("#badgeModalImg").src=b.img;
+ $("#badgeModalStatus").textContent=unlocked?(celebration?"BADGE UNLOCKED!":"UNLOCKED"):"LOCKED";
+ $("#badgeModalStatus").className="badge-status "+(unlocked?"unlocked":"locked");
+ $("#badgeModalText").textContent=unlocked?`Well done! You have unlocked ${b.name}.`:r[0];
+ $("#badgeModalProgress").textContent=unlocked?`Unlocked ${db.meta?.badgeUnlocks?.[id]||todayISO()}`:`Progress: ${cur} / ${goal}`;
+ openModal("badgeModal")
+}
 function renderBadges(){
- let unlocked=BADGES.filter(b=>b.test()).length;$("#badgeCount").textContent=`${unlocked} / 20 collected`;$("#badgeProgress").style.width=`${unlocked/20*100}%`;
- $("#badgeGrid").innerHTML=BADGES.filter(b=>badgeFilter==="all"||b.cat===badgeFilter).map(b=>{let ok=b.test();return `<div class="badge ${ok?"":"locked"}"><div class="badge-art"><img src="${b.img}" alt=""></div><strong>${b.name}</strong><small>${ok?"✓":""}</small></div>`}).join("")
+ syncBadgeUnlocks(false);let unlocked=BADGES.filter(b=>isBadgeUnlocked(b)).length;$("#badgeCount").textContent=`${unlocked} / 20 collected`;$("#badgeProgress").style.width=`${unlocked/20*100}%`;
+ $("#badgeGrid").innerHTML=BADGES.filter(b=>badgeFilter==="all"||b.cat===badgeFilter).map(b=>{let ok=isBadgeUnlocked(b);return `<button class="badge ${ok?"":"locked"}" onclick="openBadge('${b.id}')"><div class="badge-art"><img src="${b.img}" alt=""></div><strong>${b.name}</strong><small>${ok?"✓":""}</small></button>`}).join("")
 }
 function renderMore(){$("#settingCalories").value=db.settings.calories||2000;$("#settingProtein").value=db.settings.protein||160;$("#settingWeightGoal").value=db.settings.weightGoal??""}
 function showPage(id){$$(".page").forEach(p=>p.classList.toggle("active",p.id===id));$$("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));if(id==="progressPage")renderProgress();if(id==="badgesPage")renderBadges()}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}function round1(n){return Math.round((+n||0)*10)/10}
 function openModal(id){$("#"+id).classList.add("open")}function closeModal(id){$("#"+id).classList.remove("open")}
 
-function openFood(meal){selectedMeal=meal;foodTab="essentials";renderFoodModal();openModal("foodModal")}
+function openFood(meal){selectedMeal=meal;foodTab="custom";qty=1;renderFoodModal();openModal("foodModal")}
 function renderFoodModal(){
  $$(".food-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.foodtab===foodTab));
  let c=$("#foodTabContent");

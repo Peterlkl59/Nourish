@@ -40,3 +40,97 @@ main{max-width:780px;margin:auto;padding:0 13px calc(92px + env(safe-area-inset-
 .modal{display:none;position:fixed;inset:0;background:#173d6d66;z-index:20;align-items:flex-end}.modal.open{display:flex}.sheet{width:100%;max-width:780px;margin:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:20px 17px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center}.sheet-head h2{margin:0}.x{border:0;background:#e5eef8;color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:22px}.food-tabs{margin:13px 0}.food-list-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}.essential-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--line)}.essential-row:last-child{border:0}.essential-row strong{display:block}.essential-row small{color:var(--muted)}.circle-add{width:34px;height:34px;border:0;background:var(--yellow);border-radius:50%;font-weight:950}.custom-form label,.sheet>label{display:block;font-size:12px;font-weight:850;color:var(--muted);margin:11px 0}.custom-form input,.custom-form select,.sheet>label input,.sheet>label select{width:100%;border:1px solid var(--line);background:white;border-radius:12px;padding:12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qty-line{display:flex;justify-content:space-between;align-items:center;margin:12px 0}.qty-ctrl{display:flex;gap:10px;align-items:center}.qty-ctrl button{width:38px;height:38px;border:0;background:#e4f0ff;color:var(--blue);font-size:20px;border-radius:11px}.primary{width:100%;border:0;background:var(--blue2);color:white;border-radius:14px;padding:13px;font-weight:900}
 nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:10}nav button{width:min(25%,195px);border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800}nav button.active{color:var(--blue)}nav span{display:block;font-size:19px;margin-bottom:2px}nav em{font-style:normal}
 @media(max-width:520px){.badge-grid{grid-template-columns:repeat(4,1fr);gap:9px}.hero{min-height:170px}.hero-dog{width:45%}.brand-text{font-size:20px}.brand-mark{width:65px}.summary-card strong{font-size:20px}}
+
+
+/* V3.1 chart polish */
+.chart-scroll{
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:2px 0 8px;
+  scroll-snap-type:x proximity;
+}
+.bar-chart{
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  min-height:238px;
+  padding:18px 8px 0;
+}
+.bar-item{
+  flex:0 0 52px;
+  width:52px;
+  height:212px;
+  display:grid;
+  grid-template-rows:18px 154px 32px;
+  align-items:end;
+  justify-items:center;
+  scroll-snap-align:start;
+}
+.bar-value{
+  width:100%;
+  height:18px;
+  line-height:18px;
+  margin:0;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.bar-rail{
+  width:30px;
+  height:154px;
+  align-self:end;
+}
+.bar-label{
+  width:52px;
+  height:32px;
+  margin:6px 0 0;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  text-align:center;
+  white-space:nowrap;
+  font-size:10px;
+  line-height:1;
+}
+
+/* V4 chart hierarchy */
+.bar-chart{gap:8px}
+.bar-item{
+  flex:0 0 46px;
+  width:46px;
+  height:232px;
+  grid-template-rows:18px 18px 154px 32px;
+}
+.bar-dow{
+  height:18px;
+  line-height:18px;
+  font-size:11px;
+  font-weight:950;
+  color:var(--blue);
+  text-align:center;
+  white-space:nowrap;
+}
+.bar-value{font-size:9px}
+.bar-label{width:46px}
+.monthly-note{
+  margin:8px 3px 0;
+  padding:9px 11px;
+  border-radius:12px;
+  background:#eef6ff;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.35;
+  font-weight:700;
+}
+.badge{
+  appearance:none;border:0;background:transparent;color:var(--ink);padding:0;font:inherit;cursor:pointer
+}
+.badge-sheet{text-align:center}
+.badge-sheet .sheet-head{text-align:left}
+.badge-sheet>img{width:min(58vw,240px);height:180px;object-fit:contain;margin:6px auto;display:block}
+.badge-status{display:inline-block;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:950;letter-spacing:.08em}
+.badge-status.unlocked{background:#dcf7e6;color:#23814c}
+.badge-status.locked{background:#eef1f5;color:#6e7d90}
+.badge-sheet p{font-weight:750;line-height:1.45}
+.badge-detail{background:#eef6ff;border-radius:13px;padding:11px;margin:12px 0 15px;font-weight:850;color:var(--blue)}
