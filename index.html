@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f4ed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Nourish">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Nourish</title>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div><div class="eyebrow">NOURISH</div><h1 id="pageTitle">Today</h1></div>
+    <button class="date-pill" id="dateButton"></button>
+  </header>
+
+  <main>
+    <section class="page active" id="todayPage">
+      <div class="hero-grid">
+        <div class="metric-card">
+          <div class="metric-label">CALORIES</div>
+          <div class="metric-value"><span id="calTotal">0</span><small> / <span id="calTarget">2100</span> kcal</small></div>
+          <div class="bar"><i id="calBar"></i></div>
+          <div class="metric-foot" id="calRemaining">2,100 remaining</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">PROTEIN</div>
+          <div class="metric-value"><span id="proteinTotal">0</span><small> / <span id="proteinTarget">160</span> g</small></div>
+          <div class="bar"><i id="proteinBar"></i></div>
+          <div class="metric-foot" id="proteinRemaining">160 g remaining</div>
+        </div>
+      </div>
+
+      <div class="card activity-card">
+        <div><div class="section-kicker">ACTIVITY</div><strong>Went to the gym</strong></div>
+        <label class="switch"><input type="checkbox" id="gymToggle"><span></span></label>
+        <label class="duration">Duration <input id="gymMinutes" type="number" min="0" inputmode="numeric" placeholder="0"> min</label>
+      </div>
+
+      <div id="mealSections"></div>
+    </section>
+
+    <section class="page" id="historyPage">
+      <div class="segmented"><button class="active" data-hist="days">Days</button><button data-hist="weeks">Weeks</button></div>
+      <div id="historyContent"></div>
+    </section>
+
+    <section class="page" id="progressPage">
+      <div class="card current-measure">
+        <div><div class="section-kicker">CURRENT</div><h2>Body progress</h2></div>
+        <button class="primary small" id="addMeasurement">+ Add</button>
+        <div class="measure-grid">
+          <div><span>Weight</span><strong id="currentWeight">—</strong></div>
+          <div><span>Waist</span><strong id="currentWaist">—</strong></div>
+        </div>
+      </div>
+      <div class="card"><div class="section-kicker">MEASUREMENTS</div><div id="measurementList"></div></div>
+    </section>
+
+    <section class="page" id="settingsPage">
+      <div class="card settings-card">
+        <div class="section-kicker">DAILY TARGETS</div>
+        <label>Calories <input id="settingCalories" type="number" inputmode="numeric"></label>
+        <label>Protein (g) <input id="settingProtein" type="number" inputmode="numeric"></label>
+      </div>
+      <div class="card settings-card">
+        <div class="section-kicker">DATA</div>
+        <button class="row-button" id="exportBackup">Export backup <span>›</span></button>
+        <label class="row-button file-label">Restore backup <span>›</span><input type="file" id="restoreBackup" accept=".json,application/json"></label>
+        <button class="row-button" id="exportCsv">Export CSV <span>›</span></button>
+        <button class="danger" id="deleteAll">Delete All Data</button>
+        <p class="muted">Your diary is stored only on this device. Export a backup before clearing browser/site data or changing phones.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="active" data-page="todayPage"><span>◉</span>Today</button>
+    <button data-page="historyPage"><span>◷</span>History</button>
+    <button data-page="progressPage"><span>⌁</span>Progress</button>
+    <button data-page="settingsPage"><span>⚙</span>Settings</button>
+  </nav>
+</div>
+
+<div class="modal" id="foodModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="foodModalTitle">Add food</h2><button class="x" data-close="foodModal">×</button></div>
+    <input type="hidden" id="foodId">
+    <label>Meal<select id="foodMeal"></select></label>
+    <label>Food name<input id="foodName" placeholder="e.g. Greek yoghurt"></label>
+    <div class="two"><label>Calories<input id="foodCalories" type="number" inputmode="numeric"></label><label>Protein (g)<input id="foodProtein" type="number" inputmode="decimal" step="0.1"></label></div>
+    <button class="primary" id="saveFood">Save food</button>
+    <button class="danger ghost" id="deleteFood" hidden>Delete entry</button>
+  </div>
+</div>
+
+<div class="modal" id="measurementModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Measurement</h2><button class="x" data-close="measurementModal">×</button></div>
+    <input type="hidden" id="measurementId">
+    <label>Date<input id="measureDate" type="date"></label>
+    <div class="two"><label>Weight (kg)<input id="measureWeight" type="number" step="0.1" inputmode="decimal"></label><label>Waist (cm)<input id="measureWaist" type="number" step="0.1" inputmode="decimal"></label></div>
+    <button class="primary" id="saveMeasurement">Save measurement</button>
+    <button class="danger ghost" id="deleteMeasurement" hidden>Delete measurement</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
