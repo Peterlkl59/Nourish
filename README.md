@@ -67,3 +67,10 @@ Reference values are intended for generic foods; use packaging for branded/prepa
 - Chart baseline only appears when the chart contains at least one actual data point.
 - When present, the baseline sits below the columns and dates are clearly below the line.
 - Empty/N/A-only charts do not show a baseline.
+
+## V4.7 startup compatibility hotfix
+- Normalises older saved data before the app renders.
+- Missing `exercises`, `measurements`, `favourites`, settings or badge metadata are created automatically.
+- Badge achievement checks are defensive against older data structures.
+- Added a startup guard so a secondary render issue cannot leave the splash screen stuck indefinitely.
+- Preserves existing local diary data.

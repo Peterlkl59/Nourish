@@ -33,10 +33,10 @@ const BADGES=[
 {id:"protein-champion",name:"Protein Champion",cat:"nutrition",test:d=>proteinHits()>=30,img:"saucisse-medal.png"},
 {id:"balanced-day",name:"Balanced Day",cat:"nutrition",test:d=>balancedDays()>=1,img:"saucisse-proud.png"},
 {id:"balanced-week",name:"Balanced Week",cat:"nutrition",test:d=>balancedWeek(),img:"saucisse-celebrate.png"},
-{id:"first-workout",name:"First Workout",cat:"activity",test:d=>db.exercises.length>=1,img:"saucisse-stretch.png"},
-{id:"active-pup",name:"Active Pup",cat:"activity",test:d=>db.exercises.length>=5,img:"saucisse-running.png"},
-{id:"exercise-expert",name:"Exercise Expert",cat:"activity",test:d=>db.exercises.length>=25,img:"saucisse-medal.png"},
-{id:"progress-begins",name:"Progress Begins",cat:"progress",test:d=>db.measurements.length>=1,img:"saucisse-scale.png"},
+{id:"first-workout",name:"First Workout",cat:"activity",test:d=>(db.exercises||[]).length>=1,img:"saucisse-stretch.png"},
+{id:"active-pup",name:"Active Pup",cat:"activity",test:d=>(db.exercises||[]).length>=5,img:"saucisse-running.png"},
+{id:"exercise-expert",name:"Exercise Expert",cat:"activity",test:d=>(db.exercises||[]).length>=25,img:"saucisse-medal.png"},
+{id:"progress-begins",name:"Progress Begins",cat:"progress",test:d=>(db.measurements||[]).length>=1,img:"saucisse-scale.png"},
 {id:"halfway-there",name:"Halfway There",cat:"progress",test:d=>halfwayToGoal(),img:"saucisse-proud.png"},
 {id:"goal-getter",name:"Goal Getter",cat:"progress",test:d=>goalReached(),img:"saucisse-medal.png"},
 {id:"step-by-step",name:"Step by Step!",cat:"progress",test:d=>BADGES.slice(0,19).every(b=>b.test()),img:"saucisse-celebrate.png"}
@@ -48,7 +48,29 @@ let selectedDate=todayISO(),period="week",foodTab="custom",selectedMeal="Breakfa
 let db=load();
 
 function fresh(){return {settings:{calories:2000,protein:160,weightGoal:null,lang:"en"},foods:[],exercises:[],measurements:[],favourites:[],meta:{}}}
-function load(){try{let raw=localStorage.getItem(KEY);if(raw)return Object.assign(fresh(),JSON.parse(raw));let old=localStorage.getItem(LEGACY);if(old)return Object.assign(fresh(),JSON.parse(old));}catch(e){}return fresh()}
+function load(){
+ let data=null;
+ try{
+   let raw=localStorage.getItem(KEY);
+   if(raw)data=JSON.parse(raw);
+   else{
+     let old=localStorage.getItem(LEGACY);
+     if(old)data=JSON.parse(old);
+   }
+ }catch(e){console.warn("Could not read saved data",e)}
+ const base=fresh();
+ data=data&&typeof data==="object"?data:{};
+ const normal={
+   settings:{...base.settings,...(data.settings||{})},
+   foods:Array.isArray(data.foods)?data.foods:[],
+   exercises:Array.isArray(data.exercises)?data.exercises:[],
+   measurements:Array.isArray(data.measurements)?data.measurements:[],
+   favourites:Array.isArray(data.favourites)?data.favourites:[],
+   meta:{...base.meta,...(data.meta||{})}
+ };
+ normal.meta.badgeUnlocks=normal.meta.badgeUnlocks&&typeof normal.meta.badgeUnlocks==="object"?normal.meta.badgeUnlocks:{};
+ return normal
+}catch(e){}return fresh()}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));render();syncBadgeUnlocks(true)}
 function lang(){return db.settings.lang||"en"}function t(k){return I18N[lang()][k]||k}
 function applyI18N(){$$("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));$$("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang()))}
@@ -65,7 +87,7 @@ function monthLabel(ds){
  let m=d.toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{month:"short"}).replace(".","");
  return `${m.charAt(0).toUpperCase()+m.slice(1)} ${String(d.getFullYear()).slice(-2)}`
 }
-function foodItems(d){return db.foods.filter(x=>x.date===d)}function exItems(d){return db.exercises.filter(x=>x.date===d)}
+function foodItems(d){return (db.foods||[]).filter(x=>x.date===d)}function exItems(d){return (db.exercises||[]).filter(x=>x.date===d)}
 function totals(d){let f=foodItems(d),e=exItems(d);let eaten=f.reduce((a,x)=>a+(+x.calories||0)*(+x.quantity||1),0),pro=f.reduce((a,x)=>a+(+x.protein||0)*(+x.quantity||1),0),burned=e.reduce((a,x)=>a+(+x.burned||0),0),mins=e.reduce((a,x)=>a+(+x.minutes||0),0);return {eaten,pro,burned,mins,net:eaten-burned}}
 function loggedDays(){return [...new Set(db.foods.map(x=>x.date))].sort()}
 function proteinHits(){return loggedDays().filter(d=>totals(d).pro>=(+db.settings.protein||160)).length}
@@ -401,5 +423,14 @@ $("#deleteFoodEdit").onclick=()=>{
 };
 
 if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js");
-render();
-setTimeout(()=>{$("#splash").classList.add("hide");$("#app").classList.remove("hidden");setTimeout(()=>$("#splash").remove(),400)},700);
+try{
+ render();
+}catch(e){
+ console.error("Step by Step render error",e);
+}
+setTimeout(()=>{
+ const splash=$("#splash"),app=$("#app");
+ if(splash)splash.classList.add("hide");
+ if(app)app.classList.remove("hidden");
+ setTimeout(()=>splash?.remove(),400)
+},700);
