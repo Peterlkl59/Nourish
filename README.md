@@ -50,3 +50,20 @@ Reference values are intended for generic foods; use packaging for branded/prepa
 - Added a subtle chart baseline so labels sit visually below the plotting area.
 - Applied the same spacing treatment across calorie, protein, weight and waist charts.
 - Keeps the V4.3 badge tap fix.
+
+## V4.5
+- Replaced the previous badge modal/tap system with a new standalone popup created directly on tap.
+- Each badge button now binds its own click action after rendering.
+- Locked badges show unlock requirement and progress.
+- Unlocked badges show congratulations and unlock date.
+- New badge celebrations use the same robust popup.
+- Increased the visual gap below bars to 28px before the date label.
+- Moved the chart baseline above the date-label area.
+
+## V4.6
+- Removed badge popups entirely.
+- Every badge now shows its name, a short description, and either `✓ Unlocked` or live progress.
+- Locked badges remain greyed out.
+- Chart baseline only appears when the chart contains at least one actual data point.
+- When present, the baseline sits below the columns and dates are clearly below the line.
+- Empty/N/A-only charts do not show a baseline.

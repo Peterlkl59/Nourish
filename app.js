@@ -114,6 +114,8 @@ function dailyRange(n){let out=[];for(let i=n-1;i>=0;i--){let d=addDays(todayISO
 function monthlyRange(n){let now=new Date(),out=[];for(let i=n-1;i>=0;i--){let d=new Date(now.getFullYear(),now.getMonth()-i,1),y=d.getFullYear(),m=d.getMonth(),key=`${y}-${String(m+1).padStart(2,"0")}`;let ds=loggedDays().filter(x=>x.startsWith(key));let cal=ds.length?ds.reduce((a,x)=>a+totals(x).net,0)/ds.length:0,pro=ds.length?ds.reduce((a,x)=>a+totals(x).pro,0)/ds.length:0;out.push({label:monthLabel(`${y}-${String(m+1).padStart(2,"0")}-01`),cal,pro,hasFood:ds.length>0})}return out}
 function progressState(c,p){if(c==null||p==null)return {img:"saucisse-wave.png",title:"Let's get started!",copy:"Log a few days and Saucisse will help you read the trend."};let ct=+db.settings.calories||2000,pt=+db.settings.protein||160,cr=c/ct,pr=p/pt;if(cr>=.95&&cr<=1.05&&pr>=.95)return {img:"saucisse-celebrate.png",title:lang()==="fr"?"Super période !":"Great period!",copy:lang()==="fr"?"Tes moyennes sont très proches de tes objectifs.":"Your averages are sitting nicely around your targets."};if(cr<.8||cr>1.2||pr<.7)return {img:"saucisse-rest.png",title:lang()==="fr"?"On garde le cap.":"Keep going.",copy:lang()==="fr"?"La tendance est encore loin de la cible, mais chaque semaine compte.":"The trend is still some way from target, but every week counts."};return {img:"saucisse-proud.png",title:lang()==="fr"?"Presque !":"Nearly there!",copy:lang()==="fr"?"Tu n'es pas loin. Continue pas à pas.":"You're not far off. Keep going step by step."}}
 function renderBarChart(el,data,key,target,type){
+ let hasAny=data.some(x=>x.hasFood);
+ el.classList.toggle("has-data",hasAny);
  let max=Math.max(target,...data.filter(x=>x.hasFood).map(x=>x[key]),1)*1.15;
  el.innerHTML=data.map(x=>{if(!x.hasFood){let dow="";if(period==="week"&&x.date){dow=new Date(x.date+"T12:00:00").toLocaleDateString(lang()==="fr"?"fr-FR":"en-GB",{weekday:"short"}).replace(".","");dow=dow.charAt(0).toUpperCase()+dow.slice(1)}return `<div class="bar-item na"><div class="bar-dow">${dow}</div><div class="bar-value">N/A</div><div class="bar-rail"></div><div class="bar-label">${x.label}</div></div>`;}
  let val=x[key],pct=Math.max(4,Math.min(100,val/max*100)),color;
@@ -127,6 +129,7 @@ function renderMeasurementCharts(){
  renderMeasureBars($("#weightChart"),weights,"weight");renderMeasureBars($("#waistChart"),waists,"waist")
 }
 function renderMeasureBars(el,items,key){
+ el.classList.toggle("has-data",items.length>0);
  if(!items.length){
    let title=key==="weight"?(lang()==="fr"?"Aucune donnée de poids":"No weight data yet"):(lang()==="fr"?"Aucune donnée de tour de taille":"No waist data yet");
    let copy=lang()==="fr"?"Ajoutez une mesure pour commencer à suivre votre évolution.":"Add a measurement to start tracking your progress.";
@@ -169,7 +172,7 @@ function syncBadgeUnlocks(showCelebration=false){
  let newly=[];
  BADGES.forEach(b=>{if(b.test()&&!db.meta.badgeUnlocks[b.id]){db.meta.badgeUnlocks[b.id]=todayISO();newly.push(b)}});
  localStorage.setItem(KEY,JSON.stringify(db));
- if(showCelebration&&newly.length)setTimeout(()=>openBadge(newly[0].id,true),150)
+ if(showCelebration&&newly.length){ /* badge unlock is reflected directly in the badge book */ }
 }
 function isBadgeUnlocked(b){return !!(db.meta?.badgeUnlocks?.[b.id]||b.test())}
 function openBadge(id,celebration=false){
@@ -181,9 +184,53 @@ function openBadge(id,celebration=false){
  $("#badgeModalProgress").textContent=unlocked?`Unlocked ${db.meta?.badgeUnlocks?.[id]||todayISO()}`:`Progress: ${cur} / ${goal}`;
  openModal("badgeModal")
 }
+
+
+function badgeDescription(id,unlocked){
+ const map={
+ "first-step":["Logged your first food","Log your first food"],
+ "getting-started":["Logged 3 days","Log 3 days"],
+ "one-week":["Logged a full week","Log 7 days"],
+ "two-weeks":["Logged 14 days","Log 14 days"],
+ "month-motion":["Logged 30 days","Log 30 days"],
+ "consistency-pup":["3-day logging streak","Build a 3-day streak"],
+ "on-a-roll":["7-day logging streak","Build a 7-day streak"],
+ "unstoppable":["30-day logging streak","Build a 30-day streak"],
+ "protein-pup":["Hit protein target once","Hit protein target once"],
+ "protein-pro":["Hit protein target 7 times","Hit protein target 7 times"],
+ "protein-champion":["Hit protein target 30 times","Hit protein target 30 times"],
+ "balanced-day":["Calories within ±5% of target","Finish a day within ±5% of target"],
+ "balanced-week":["Weekly calories around target","Keep weekly average within ±5%"],
+ "first-workout":["Logged your first workout","Log your first workout"],
+ "active-pup":["Logged 5 workouts","Log 5 workouts"],
+ "exercise-expert":["Logged 25 workouts","Log 25 workouts"],
+ "progress-begins":["Started tracking measurements","Add your first measurement"],
+ "halfway-there":["Reached halfway to your goal","Reach halfway to your weight goal"],
+ "goal-getter":["Reached your weight goal","Reach your weight goal"],
+ "step-by-step":["Collected every badge","Unlock the other 19 badges"]
+ };
+ return (map[id]||["Achievement unlocked","Keep going"])[unlocked?0:1]
+}
+function badgeProgressText(id,unlocked){
+ if(unlocked)return "✓ Unlocked";
+ const r=badgeRequirement(id),cur=r[1](),goal=r[2]();
+ return `${cur} / ${goal}`;
+}
 function renderBadges(){
- syncBadgeUnlocks(false);let unlocked=BADGES.filter(b=>isBadgeUnlocked(b)).length;$("#badgeCount").textContent=`${unlocked} / 20 collected`;$("#badgeProgress").style.width=`${unlocked/20*100}%`;
- $("#badgeGrid").innerHTML=BADGES.filter(b=>badgeFilter==="all"||b.cat===badgeFilter).map(b=>{let ok=isBadgeUnlocked(b);return `<button type="button" class="badge ${ok?"":"locked"}" data-badge-id="${b.id}"><div class="badge-art"><img src="${b.img}" alt=""></div><strong>${b.name}</strong><small>${ok?"✓":""}</small></button>`}).join("")
+ syncBadgeUnlocks(false);
+ let unlocked=BADGES.filter(b=>isBadgeUnlocked(b)).length;
+ $("#badgeCount").textContent=`${unlocked} / 20 collected`;
+ $("#badgeProgress").style.width=`${unlocked/20*100}%`;
+ const visible=BADGES.filter(b=>badgeFilter==="all"||b.cat===badgeFilter);
+ $("#badgeGrid").innerHTML=visible.map(b=>{
+   let ok=isBadgeUnlocked(b);
+   return `<div class="badge ${ok?"":"locked"}">
+     <div class="badge-art"><img src="${b.img}" alt=""></div>
+     <strong>${b.name}</strong>
+     <p>${badgeDescription(b.id,ok)}</p>
+     <small class="${ok?"badge-unlocked":"badge-locked-progress"}">${badgeProgressText(b.id,ok)}</small>
+   </div>`
+ }).join("");
 }
 function renderMore(){$("#settingCalories").value=db.settings.calories||2000;$("#settingProtein").value=db.settings.protein||160;$("#settingWeightGoal").value=db.settings.weightGoal??""}
 function showPage(id){$$(".page").forEach(p=>p.classList.toggle("active",p.id===id));$$("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));if(id==="progressPage")renderProgress();if(id==="badgesPage")renderBadges()}
@@ -323,15 +370,6 @@ $("#prevDay").onclick=()=>{selectedDate=addDays(selectedDate,-1);renderHome()};$
 $("#exerciseBtn").onclick=()=>openModal("exerciseModal");$("#saveExercise").onclick=()=>{db.exercises.push({id:uid(),date:selectedDate,type:$("#activityType").value,minutes:+$("#exerciseMinutes").value||0,burned:+$("#exerciseBurned").value||0});$("#exerciseMinutes").value="";$("#exerciseBurned").value="";closeModal("exerciseModal");save()};
 $$("[data-period]").forEach(b=>b.onclick=()=>{period=b.dataset.period;$$("[data-period]").forEach(x=>x.classList.toggle("active",x===b));renderProgress()});
 $$("[data-filter]").forEach(b=>b.onclick=()=>{badgeFilter=b.dataset.filter;$$("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));renderBadges()});
-document.addEventListener("click",e=>{
-  const badge=e.target.closest?.("[data-badge-id]");
-  if(!badge)return;
-  e.preventDefault();
-  e.stopPropagation();
-  openBadge(badge.dataset.badgeId,false);
-});
-
-
 $$("[data-foodtab]").forEach(b=>b.onclick=()=>{foodTab=b.dataset.foodtab;renderFoodModal()});
 $("#addMeasurement").onclick=()=>{$("#measureDate").value=todayISO();$("#measureWeight").value="";$("#measureWaist").value="";openModal("measurementModal")};$("#saveMeasurement").onclick=()=>{db.measurements.push({id:uid(),date:$("#measureDate").value||todayISO(),weight:+$("#measureWeight").value||null,waist:+$("#measureWaist").value||null});closeModal("measurementModal");save()};
 $("#settingCalories").onchange=()=>{db.settings.calories=+$("#settingCalories").value||2000;save()};$("#settingProtein").onchange=()=>{db.settings.protein=+$("#settingProtein").value||160;save()};$("#settingWeightGoal").onchange=()=>{db.settings.weightGoal=+$("#settingWeightGoal").value||null;save()};
