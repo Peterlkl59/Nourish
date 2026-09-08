@@ -1,12 +1,207 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#f8fbff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Nourish"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="stylesheet" href="styles.css"><title>Nourish with Saucisse</title></head><body>
-<div id="splash"><img src="saucisse-running.png" alt="Saucisse"><div class="brand big">Nourish <small>with Saucisse</small></div><div class="splash-tag" data-i18n="splashTag">Good food. Bright days. A healthier you.</div></div>
-<div id="app" class="hidden"><header><div class="brand-wrap"><img src="saucisse-running.png" alt="Saucisse" class="brand-dog"><div class="brand">Nourish <small>with Saucisse</small></div></div><div class="lang-toggle"><button data-lang="en" class="active">EN</button><button data-lang="fr">FR</button></div></header><main>
-<section class="page active" id="homePage"><div class="hero card"><div><div class="hello" id="helloText">Good morning!</div><div class="hero-copy" data-i18n="heroCopy">Small steps. Good food. Happier you.</div></div><img src="saucisse-running.png" alt="Saucisse" class="hero-dog"></div><div class="date-row"><button class="date-btn" id="dateButton"></button></div><div class="kpi-grid"><div class="kpi calories"><div class="solid-icon">◉</div><span data-i18n="eaten">Eaten</span><strong id="eatenKcal">0</strong><small>kcal</small></div><div class="kpi burned"><div class="solid-icon">▲</div><span data-i18n="burned">Burned</span><strong id="burnedKcal">0</strong><small>kcal</small></div><div class="kpi net"><div class="solid-icon">≋</div><span data-i18n="net">Net</span><strong id="netKcal">0</strong><small id="netTargetText"></small></div><div class="kpi protein"><div class="solid-icon">●</div><span data-i18n="protein">Protein</span><strong id="proteinTotal">0g</strong><small id="proteinTargetText"></small></div></div><div class="card progress-card"><div class="progress-top"><span data-i18n="todayProgress">Today's progress</span><strong id="progressLabel"></strong></div><div class="progress-bar"><i id="progressBar"></i></div><div class="encouragement" id="encouragement"></div></div><div class="section-title"><h2 data-i18n="meals">Meals</h2><button class="ghost-btn" id="openExercise" data-i18n="addExercise">+ Exercise</button></div><div id="mealSections"></div></section>
-<section class="page" id="logPage"><div class="page-head"><h1 data-i18n="logFood">Log Food</h1><button class="ghost-btn" id="quickAddBtn" data-i18n="quickAdd">Quick add</button></div><div class="segmented meal-tabs" id="mealTabs"></div><div id="mealLogList"></div></section>
-<section class="page" id="progressPage"><div class="page-head"><h1 data-i18n="progress">Progress</h1></div><div class="segmented"><button data-period="week" class="active" data-i18n="week">Week</button><button data-period="month" data-i18n="month">Month</button></div><div class="chart-card card"><div class="chart-head"><span data-i18n="calories">Calories</span><strong id="avgCalories">—</strong></div><canvas id="calorieChart" height="190"></canvas></div><div class="chart-card card"><div class="chart-head"><span data-i18n="protein">Protein</span><strong id="avgProtein">—</strong></div><canvas id="proteinChart" height="190"></canvas></div><div class="chart-card card"><div class="chart-head"><span data-i18n="weight">Weight</span><strong id="weightNow">—</strong></div><canvas id="weightChart" height="190"></canvas></div><div class="card measurements-card"><div class="section-title no-margin"><h2 data-i18n="measurements">Measurements</h2><button class="ghost-btn" id="addMeasurement" data-i18n="add">+ Add</button></div><div id="measurementList"></div></div></section>
-<section class="page" id="morePage"><div class="page-head"><h1 data-i18n="goalsSettings">Goals & Settings</h1></div><div class="card settings-card"><label><span data-i18n="dailyCalories">Daily calories</span><input id="settingCalories" type="number" inputmode="numeric"></label><label><span data-i18n="dailyProtein">Daily protein</span><input id="settingProtein" type="number" inputmode="decimal"></label><label><span data-i18n="weightGoal">Weight goal</span><div class="input-unit"><input id="settingWeightGoal" type="number" step="0.1" inputmode="decimal"><b>kg</b></div></label></div><div class="card settings-card"><div class="section-label" data-i18n="language">Language</div><div class="settings-lang"><button data-lang="en">English</button><button data-lang="fr">Français</button></div></div><div class="card settings-card"><div class="section-label" data-i18n="data">Data</div><button class="row-btn" id="exportBackup"><span data-i18n="exportBackup">Export backup</span><b>›</b></button><label class="row-btn file-label"><span data-i18n="restoreBackup">Restore backup</span><b>›</b><input type="file" id="restoreBackup" accept=".json,application/json"></label><button class="row-btn" id="exportCsv"><span data-i18n="exportCsv">Export CSV</span><b>›</b></button><button class="danger" id="deleteAll" data-i18n="deleteAll">Delete All Data</button><p class="fineprint" data-i18n="localNote">Your data is stored only on this device. Export a backup regularly.</p></div></section>
-</main><nav><button class="active" data-page="homePage"><span class="navicon">⌂</span><em data-i18n="home">Home</em></button><button data-page="logPage"><span class="navicon">▣</span><em data-i18n="log">Log</em></button><button data-page="progressPage"><span class="navicon">▥</span><em data-i18n="progress">Progress</em></button><button data-page="morePage"><span class="navicon">•••</span><em data-i18n="more">More</em></button></nav></div>
-<div class="modal" id="foodModal"><div class="sheet"><div class="sheet-head"><h2 id="foodModalTitle" data-i18n="addFood">Add Food</h2><button class="x" data-close="foodModal">×</button></div><input type="hidden" id="foodId"><label><span data-i18n="meal">Meal</span><select id="foodMeal"></select></label><label><span data-i18n="favouriteFood">Favourite food or drink</span><select id="favouriteSelect"><option value="">—</option></select></label><label><span data-i18n="foodName">Food name</span><input id="foodName"></label><div class="quantity-row"><span data-i18n="quantity">Quantity</span><div><button id="qtyMinus">−</button><strong id="qtyValue">1</strong><button id="qtyPlus">+</button></div></div><div class="two"><label><span data-i18n="calPerItem">Calories per item</span><input id="foodCalories" type="number" inputmode="numeric"></label><label><span data-i18n="proteinPerItem">Protein per item (g)</span><input id="foodProtein" type="number" step="0.1" inputmode="decimal"></label></div><div class="total-box"><span data-i18n="total">Total</span><strong id="foodTotalPreview">0 kcal · 0g</strong></div><label class="checkline"><input type="checkbox" id="saveFavourite"><span data-i18n="saveFavourite">Save as favourite</span></label><button class="primary" id="saveFood" data-i18n="addToDiary">Add to Diary</button><button class="danger ghost" id="deleteFood" hidden data-i18n="deleteEntry">Delete entry</button></div></div>
-<div class="modal" id="exerciseModal"><div class="sheet"><div class="sheet-head"><h2 data-i18n="addExercise">Add Exercise</h2><button class="x" data-close="exerciseModal">×</button></div><label><span data-i18n="activity">Activity</span><select id="activityType"><option>Gym</option><option>Walking</option><option>Running</option><option>Yoga</option><option>Other</option></select></label><div class="two"><label><span data-i18n="duration">Duration (min)</span><input id="exerciseMinutes" type="number" inputmode="numeric"></label><label><span data-i18n="caloriesBurned">Calories burned</span><input id="exerciseBurned" type="number" inputmode="numeric"></label></div><button class="primary" id="saveExercise" data-i18n="saveExercise">Save Exercise</button></div></div>
-<div class="modal" id="measurementModal"><div class="sheet"><div class="sheet-head"><h2 data-i18n="measurement">Measurement</h2><button class="x" data-close="measurementModal">×</button></div><input type="hidden" id="measurementId"><label><span data-i18n="date">Date</span><input id="measureDate" type="date"></label><div class="two"><label><span data-i18n="weight">Weight</span><div class="input-unit"><input id="measureWeight" type="number" step="0.1" inputmode="decimal"><b>kg</b></div></label><label><span data-i18n="waist">Waist</span><div class="input-unit"><input id="measureWaist" type="number" step="0.1" inputmode="decimal"><b>cm</b></div></label></div><button class="primary" id="saveMeasurement" data-i18n="saveMeasurement">Save Measurement</button><button class="danger ghost" id="deleteMeasurement" hidden data-i18n="deleteMeasurement">Delete Measurement</button></div></div>
-<div class="modal" id="weeklyModal"><div class="sheet weekly-sheet"><img src="saucisse.svg" alt=""><h2 id="weeklyTitle"></h2><p id="weeklyText"></p><button class="primary" id="viewWeekly" data-i18n="viewProgress">View progress</button><button class="ghost-wide" data-close="weeklyModal" data-i18n="later">Later</button></div></div><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#f5fbff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Step by Step!">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="styles.css">
+<title>Step by Step! with Saucisse</title>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-s">S</div>
+  <img src="saucisse-running.png" alt="Saucisse">
+  <div class="splash-brand">Step by Step!<small>with Saucisse</small></div>
+  <p data-i18n="splashTag">Small steps. Big results.</p>
+</div>
+
+<div id="app" class="hidden">
+<header class="app-header">
+  <div class="brand-lockup">
+    <div class="brand-mark"><span>S</span><img src="saucisse-running.png" alt="Saucisse"></div>
+    <div class="brand-text">Step by Step!<small>with Saucisse</small></div>
+  </div>
+  <div class="lang-toggle"><button data-lang="en" class="active">EN</button><button data-lang="fr">FR</button></div>
+</header>
+
+<main>
+<section class="page active" id="homePage">
+  <div class="hero card">
+    <div>
+      <h1 id="helloText">Good morning!</h1>
+      <p data-i18n="heroCopy">Small steps today to a healthier you.</p>
+    </div>
+    <div class="hero-sun">☀</div>
+    <img src="saucisse-running.png" class="hero-dog" alt="Saucisse">
+  </div>
+
+  <div class="day-switcher">
+    <button id="prevDay" aria-label="Previous day">‹</button>
+    <strong id="selectedDateLabel"></strong>
+    <button id="nextDay" aria-label="Next day">›</button>
+    <button id="calendarJump" class="calendar-btn">▣</button>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card calories">
+      <span class="metric-icon">🔥</span>
+      <div><small data-i18n="calories">Calories</small><strong id="homeCalories">0</strong><em id="homeCalTarget">/ 2000 kcal</em></div>
+    </div>
+    <div class="summary-card protein">
+      <span class="metric-icon">●</span>
+      <div><small data-i18n="protein">Protein</small><strong id="homeProtein">0g</strong><em id="homeProteinTarget">/ 160g</em></div>
+    </div>
+    <div class="summary-card exercise">
+      <span class="metric-icon">↗</span>
+      <div><small data-i18n="exercise">Exercise</small><strong id="homeExercise">0 min</strong><em id="homeBurned">0 kcal burned</em></div>
+    </div>
+    <div class="summary-card net">
+      <span class="metric-icon">≈</span>
+      <div><small data-i18n="netCalories">Net calories</small><strong id="homeNet">0</strong><em id="homeNetTarget">/ 2000 kcal</em></div>
+    </div>
+  </div>
+
+  <div id="homeMascotMessage" class="mascot-message card">
+    <img id="homeMascotImg" src="saucisse-proud.png" alt="Saucisse">
+    <div><strong id="homeMascotTitle"></strong><p id="homeMascotCopy"></p></div>
+  </div>
+
+  <div class="meals-heading"><h2 data-i18n="meals">Meals</h2><button id="exerciseBtn" class="outline-blue" data-i18n="addExercise">+ Exercise</button></div>
+  <div id="mealSections"></div>
+</section>
+
+<section class="page" id="progressPage">
+  <div class="page-title"><h1 data-i18n="progress">Progress</h1></div>
+  <div class="segmented period-tabs">
+    <button data-period="week" class="active" data-i18n="week">Week</button>
+    <button data-period="month" data-i18n="month">Month</button>
+  </div>
+
+  <div class="progress-hero card">
+    <img id="progressMascot" src="saucisse-proud.png" alt="Saucisse">
+    <div><h2 id="progressHeadline">Great week!</h2><p id="progressMessage"></p></div>
+  </div>
+
+  <div class="avg-grid">
+    <div class="avg-card"><span class="avg-icon green">●</span><div><small data-i18n="averageCalories">Average calories</small><strong id="avgCalories">N/A</strong><em id="avgCaloriesTarget"></em></div></div>
+    <div class="avg-card"><span class="avg-icon purple">●</span><div><small data-i18n="averageProtein">Average protein</small><strong id="avgProtein">N/A</strong><em id="avgProteinTarget"></em></div></div>
+  </div>
+
+  <div class="chart-card card">
+    <div class="chart-title"><span>🔥</span><h2 data-i18n="calories">Calories</h2></div>
+    <div class="chart-scroll"><div class="bar-chart" id="calorieChart"></div></div>
+  </div>
+
+  <div class="chart-card card">
+    <div class="chart-title"><span>●</span><h2 data-i18n="protein">Protein</h2></div>
+    <div class="chart-scroll"><div class="bar-chart" id="proteinChart"></div></div>
+  </div>
+
+  <div class="chart-card card">
+    <div class="chart-title"><span>▰</span><h2 data-i18n="weight">Weight</h2></div>
+    <div class="chart-scroll"><div class="bar-chart" id="weightChart"></div></div>
+    <button class="wide-yellow" id="addMeasurement" data-i18n="addMeasurement">+ Add measurement</button>
+  </div>
+
+  <div class="chart-card card">
+    <div class="chart-title"><span>⌁</span><h2 data-i18n="waist">Waist</h2></div>
+    <div class="chart-scroll"><div class="bar-chart" id="waistChart"></div></div>
+  </div>
+</section>
+
+<section class="page" id="badgesPage">
+  <div class="page-title"><h1 data-i18n="badges">Badges</h1></div>
+  <div class="badge-hero card">
+    <img src="saucisse-medal.png" alt="Saucisse with medal">
+    <div><h2 data-i18n="doingAmazing">You're doing amazing!</h2><p data-i18n="unlockMore">Keep going to unlock more badges.</p></div>
+  </div>
+  <div class="badge-progress-wrap">
+    <div><strong id="badgeCount">0 / 20 collected</strong></div>
+    <div class="badge-progress"><i id="badgeProgress"></i></div>
+  </div>
+  <div class="segmented badge-filters">
+    <button data-filter="all" class="active" data-i18n="all">All</button>
+    <button data-filter="nutrition" data-i18n="nutrition">Nutrition</button>
+    <button data-filter="activity" data-i18n="activity">Activity</button>
+    <button data-filter="progress" data-i18n="progress">Progress</button>
+    <button data-filter="streaks" data-i18n="streaks">Streaks</button>
+  </div>
+  <div class="badge-grid" id="badgeGrid"></div>
+</section>
+
+<section class="page" id="morePage">
+  <div class="page-title"><h1 data-i18n="more">More</h1></div>
+  <div class="card settings-card">
+    <h3 data-i18n="goals">Goals</h3>
+    <label><span data-i18n="dailyCalories">Daily calories</span><input id="settingCalories" type="number" inputmode="numeric"></label>
+    <label><span data-i18n="dailyProtein">Daily protein</span><input id="settingProtein" type="number" inputmode="decimal"></label>
+    <label><span data-i18n="weightGoal">Weight goal</span><div class="unit-field"><input id="settingWeightGoal" type="number" step="0.1" inputmode="decimal"><b>kg</b></div></label>
+  </div>
+  <div class="card settings-card">
+    <h3 data-i18n="language">Language</h3>
+    <div class="settings-lang"><button data-lang="en">English</button><button data-lang="fr">Français</button></div>
+  </div>
+  <div class="card settings-card">
+    <h3 data-i18n="data">Data</h3>
+    <button class="settings-row" id="exportBackup"><span data-i18n="exportBackup">Export backup</span><b>›</b></button>
+    <label class="settings-row file-row"><span data-i18n="restoreBackup">Restore backup</span><b>›</b><input type="file" id="restoreBackup" accept=".json,application/json"></label>
+    <button class="settings-row" id="exportCsv"><span data-i18n="exportCsv">Export CSV</span><b>›</b></button>
+    <button class="danger" id="deleteAll" data-i18n="deleteAll">Delete All Data</button>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button class="active" data-page="homePage"><span>⌂</span><em data-i18n="home">Home</em></button>
+  <button data-page="progressPage"><span>▥</span><em data-i18n="progress">Progress</em></button>
+  <button data-page="badgesPage"><span>★</span><em data-i18n="badges">Badges</em></button>
+  <button data-page="morePage"><span>•••</span><em data-i18n="more">More</em></button>
+</nav>
+</div>
+
+<div class="modal" id="foodModal">
+ <div class="sheet">
+  <div class="sheet-head"><h2 data-i18n="addFood">Add Food</h2><button class="x" data-close="foodModal">×</button></div>
+  <input type="hidden" id="foodId">
+  <div class="segmented food-tabs">
+    <button data-foodtab="essentials" class="active" data-i18n="essentials">Essentials</button>
+    <button data-foodtab="favourites" data-i18n="favourites">Favourites</button>
+    <button data-foodtab="custom" data-i18n="custom">Custom</button>
+  </div>
+  <div id="foodTabContent"></div>
+ </div>
+</div>
+
+<div class="modal" id="exerciseModal">
+ <div class="sheet">
+  <div class="sheet-head"><h2 data-i18n="addExercise">Add Exercise</h2><button class="x" data-close="exerciseModal">×</button></div>
+  <label><span data-i18n="activity">Activity</span><select id="activityType"><option>Gym</option><option>Walking</option><option>Running</option><option>Yoga</option><option>Other</option></select></label>
+  <div class="two">
+   <label><span data-i18n="duration">Duration (min)</span><input id="exerciseMinutes" type="number" inputmode="numeric"></label>
+   <label><span data-i18n="caloriesBurned">Calories burned</span><input id="exerciseBurned" type="number" inputmode="numeric"></label>
+  </div>
+  <button class="primary" id="saveExercise" data-i18n="saveExercise">Save Exercise</button>
+ </div>
+</div>
+
+<div class="modal" id="measurementModal">
+ <div class="sheet">
+  <div class="sheet-head"><h2 data-i18n="measurement">Measurement</h2><button class="x" data-close="measurementModal">×</button></div>
+  <label><span data-i18n="date">Date</span><input id="measureDate" type="date"></label>
+  <div class="two">
+   <label><span data-i18n="weight">Weight</span><input id="measureWeight" type="number" step="0.1" inputmode="decimal"></label>
+   <label><span data-i18n="waist">Waist</span><input id="measureWaist" type="number" step="0.1" inputmode="decimal"></label>
+  </div>
+  <button class="primary" id="saveMeasurement" data-i18n="saveMeasurement">Save Measurement</button>
+ </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
